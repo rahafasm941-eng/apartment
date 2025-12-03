@@ -11,21 +11,47 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('apartments', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-            $table->string('nameOfOwner');
-            $table->string('address');
-            $table->string('city');
-            $table->integer('numberOfRooms');
-            $table->decimal('rentPrice', 8, 2);
-            $table->boolean('isAvailable')->default(true);
-            $table->string('imageUrl')->nullable();
-            $table->string('description')->nullable();
-            $table->integer('area');
+   
+    Schema::create('apartments', function (Blueprint $table) {
+        $table->id();
+        $table->timestamps();
 
-        });
-    }
+        // Basic info
+        $table->string('address');
+        $table->string('city');
+        $table->string('neighborhood');
+        $table->text('description')->nullable();
+
+        // Pricing
+        $table->decimal('price_per_day', 8, 2);
+
+        // Specifications
+        $table->integer('area');
+        $table->integer('number_of_rooms');
+        $table->integer('bathrooms')->default(1);
+        $table->boolean('is_available')->default(true);
+
+        // Media
+        $table->string('image_url')->nullable();
+
+        // Location
+        $table->double('latitude', 10, 8);
+        $table->double('longitude', 11, 8);
+
+        // Extra features
+        $table->json('features')->nullable();
+
+        // Owner
+        $table->foreignId('user_id')
+              ->constrained()
+              ->onDelete('cascade');
+
+        // Admin approval
+        $table->boolean('is_approved')->default(false);
+    });
+}
+
+    
 
     /**
      * Reverse the migrations.

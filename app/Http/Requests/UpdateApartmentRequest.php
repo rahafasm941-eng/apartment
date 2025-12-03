@@ -4,14 +4,14 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ApartmentRequest extends FormRequest
+class UpdateApartmentRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true; 
+        return false;
     }
 
     /**
@@ -22,15 +22,16 @@ class ApartmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nameOfOwner' => 'required|string|max:100',
-            'address' => 'required|string|max:255',
-            'city' => 'required|string|max:100',
-            'numberOfRooms' => 'required|integer|min:1',
-            'rentPrice' => 'required|numeric|min:0',
-            'isAvailable' => 'required|boolean',
+            
+            'nameOfOwner' => 'sometimes|string|max:100',
+            'address' => 'sometimes|string|max:255',
+            'city' => 'sometimes|string|max:100',
+            'numberOfRooms' => 'sometimes|integer|min:1',
+            'rentPrice' => 'sometimes|numeric|min:0',
+            'isAvailable' => 'sometimes|boolean',
             'imageUrl' => 'nullable|url',
             'description' => 'nullable|string',
-            'area' => 'required|integer|min:1',
+            'area' => 'sometimes|integer|min:1',
         ];
     }
 }

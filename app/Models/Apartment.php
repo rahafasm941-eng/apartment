@@ -17,4 +17,16 @@ class Apartment extends Model
         'description',
         'area',
     ];
+    public function owner() {
+    return $this->belongsTo(User::class, 'user_id');
+}
+
+public function bookings() {
+    return $this->hasMany(Booking::class);
+}
+
+public function reviews() {
+    return $this->hasMany(Review::class);
+}
+
 }
