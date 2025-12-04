@@ -42,19 +42,32 @@ class UserController extends Controller
     }
     public function index()
     {
-        //
+       $users=User::all();
+       return response()->json($users);
     }
     public function store(Request $request)
     {
-        //
+     $request->validate([
+        'first_name'=>'nullable|string|max:255',
+        'last_name'=>'nullable|string|max:255',
+        'phone'=>'required|string|unique:users,phone',
+        'password'=>'nullable|string|min:6',
+        'role'='required|in:owner,renter',
+        'birth_date'=>'nullable/date',
+
+
+       
+    
+     ]) 
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(User $user)
+    public function show($id)
     {
-        //
+       $user=User::findorFail($id);
+       return response()->json($user); 
     }
 
     /**

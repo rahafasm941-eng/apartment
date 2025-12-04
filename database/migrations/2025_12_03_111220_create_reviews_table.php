@@ -20,9 +20,9 @@ return new class extends Migration
               ->constrained()
               ->onDelete('cascade');
 
-        $table->foreignId('apartment_id')
-              ->constrained()
-              ->onDelete('cascade');
+      //   $table->foreignId('apartment_id')
+      //         ->constrained()
+      //         ->onDelete('cascade');
 
         $table->foreignId('booking_id')
               ->constrained()

@@ -13,4 +13,6 @@ Route::apiResource('apartments', ApartmentController::class);
 
 Route::post('/signup', [UserController::class, 'signup']);
 Route::post('/login', [UserController::class, 'login']);
-Route::post('/logout', [UserController::class, 'logout'])->middleware('auth:sanctum');
+Route::post('/logout', [UserController::class, 'logout'])
+        ->middleware('auth:sanctum');
+        

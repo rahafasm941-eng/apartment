@@ -9,6 +9,20 @@ class Booking extends Model
 {
     /** @use HasFactory<\Database\Factories\BookingFactory> */
     use HasFactory;
+    protected $fillable = [
+        'user_id',
+        'apartment_id',
+        'start_date',
+        'end_date',
+        'total_price',
+        'status',
+        'notes',
+    ];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+    ];
     public function user() {
     return $this->belongsTo(User::class);
 }

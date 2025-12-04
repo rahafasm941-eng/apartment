@@ -27,12 +27,12 @@ return new class extends Migration
 
         // Specifications
         $table->integer('area');
-        $table->integer('number_of_rooms');
+        $table->integer('number_of_rooms')->default(1);
         $table->integer('bathrooms')->default(1);
         $table->boolean('is_available')->default(true);
 
         // Media
-        $table->string('image_url')->nullable();
+        $table->string('image_url');
 
         // Location
         $table->double('latitude', 10, 8);
@@ -43,7 +43,7 @@ return new class extends Migration
 
         // Owner
         $table->foreignId('user_id')
-              ->constrained()
+              ->constrained('users')
               ->onDelete('cascade');
 
         // Admin approval
