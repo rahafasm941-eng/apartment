@@ -28,7 +28,6 @@ class UserRequest extends FormRequest
             'dateOfBirth' => 'required|date|before_or_equal:' . now()->subYears(18)->toDateString(),
             'email' => 'required|string|email|max:255|unique:users',
             'phoneNumber' => 'required|string|digits:10|unique:users',
-            'password' => 'required|string|min:8|confirmed',
         ];
     }
     public function messages()

@@ -10,32 +10,72 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function signup(UserRequest $request)
-    {
-        $user = User::create([
-            'FirstName' => $request->FirstName,
-            'LastName' => $request->LastName,
-            'dateOfBirth' => $request->dateOfBirth,
-            'email' => $request->email,
-            'phoneNumber' => $request->phoneNumber,
-            'password' => Hash::make($request->password),
-        ]);
+    public function signup(Request $request)
+ {
+    $request->validate([
+        'first_name' => 'required|string|max:50',
+        'last_name'  => 'required|string|max:50',
+        'phone'      => 'required|string|digits:10|unique:users,phone',
+        'role'       => 'required|in:owner,renter',
+        'profile_image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+        'id_image' => 'required|image|mimes:jpg,jpeg,png|max:4096',
+
+        'birth_date' => [
+            'required',
+            'date',
+            'before_or_equal:' . now()->subYears(18)->format('Y-m-d'),
+        ],
+    ]);
+    $profileImagePath = $request->file('profile_image')->store('profile_images', 'public');
+    $idImagePath = $request->file('id_image')->store('id_images', 'public');
+
+    $user = User::create([
+        'first_name'  => $request->first_name,
+        'last_name'   => $request->last_name,
+        'phone'       => $request->phone,
+        'role'        => $request->role,
+        'birth_date'  => $request->birth_date,
+        'is_approved' => false,
+        'profile_image' => $profileImagePath,
+        'id_image' => $idImagePath,
+    ]);
+
+    return response()->json([
+        'message' => 'Account created. Waiting for admin approval.',
+        'user'    => $user,
+    ], 201);
+}
+
+
+       public function login(Request $request)
+{
+    $request->validate([
+        'phone' => 'required|string|digits:10'
+    ]);
+
+    $user = User::where('phone', $request->phone)->first();
+
+    if (!$user) {
+        return response()->json(['message' => 'Invalid phone'], 401);
     }
-    public function login(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|string|email',
-            'phoneNumber' => 'required|string|digits:10',
-            'password' => 'required|string|min:8|',
-        ]);
-        if (!Auth::attempt($request->only(['email' ,'phoneNumber', 'password']))){
-            return response()->json(['message' => 'Invalid email or password'], 401);
-        }
-        $user=User::where('phoneNumber', $request->phoneNumber)->firstOrFail();
-        $token = $user->createToken('auth_token')->plainTextToken;
-        return response()->json([
-            'access_token' => $token,]);
+
+    // تحقق من موافقة الأدمن
+    if (!$user->is_approved) {
+        return response()->json(['message' => 'Your account is not approved by admin yet'], 403);
     }
+
+    // أنشئ توكن جديد
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'message' => 'Login successful',
+        'access_token' => $token,
+        'token_type' => 'Bearer',
+        'user' => $user,
+    ]);
+}
+
+
     public function logout(Request $request){
         $request->user()->currentAccessToken()->delete();
         return response()->json(['message' => 'Logged out successfully']);
@@ -45,22 +85,7 @@ class UserController extends Controller
        $users=User::all();
        return response()->json($users);
     }
-    public function store(Request $request)
-    {
-     $request->validate([
-        'first_name'=>'nullable|string|max:255',
-        'last_name'=>'nullable|string|max:255',
-        'phone'=>'required|string|unique:users,phone',
-        'password'=>'nullable|string|min:6',
-        'role'='required|in:owner,renter',
-        'birth_date'=>'nullable/date',
-
-
-       
     
-     ]) 
-    }
-
     /**
      * Display the specified resource.
      */
