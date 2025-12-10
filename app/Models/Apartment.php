@@ -2,21 +2,28 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Apartment extends Model
 {
+    use HasFactory;
     protected $fillable = [
-        'nameOfOwner',
         'address',
         'city',
-        'numberOfRooms',
-        'rentPrice',
-        'isAvailable',
-        'imageUrl',
+        'neighborhood',
         'description',
+        'price_per_month',
         'area',
-    ];
+        'number_of_rooms',
+        'bathrooms',
+        'is_available',
+        'image_url',
+        'latitude',
+        'longitude',
+        'features',
+        'user_id',
+        ];
     public function owner() {
     return $this->belongsTo(User::class, 'user_id');
 }

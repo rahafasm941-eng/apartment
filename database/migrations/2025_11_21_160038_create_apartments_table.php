@@ -23,7 +23,7 @@ return new class extends Migration
         $table->text('description')->nullable();
 
         // Pricing
-        $table->decimal('price_per_day', 8, 2);
+        $table->decimal('price_per_month', 8, 2);
 
         // Specifications
         $table->integer('area');

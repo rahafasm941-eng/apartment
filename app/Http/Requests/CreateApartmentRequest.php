@@ -22,13 +22,17 @@ class CreateApartmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nameOfOwner' => 'required|string|max:100',
+            
             'address' => 'required|string|max:255',
             'city' => 'required|string|max:100',
-            'numberOfRooms' => 'required|integer|min:1',
-            'rentPrice' => 'required|numeric|min:0',
-            'isAvailable' => 'required|boolean',
-            'imageUrl' => 'required|image'|'mimes:png,jpg,jpeg|max:2048',
+            'neighborhood' => 'required|string|max:100',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'bathrooms' => 'required|integer|min:1',
+            'number_of_rooms' => 'required|integer|min:1',
+            'price_per_month' => 'required|numeric|min:0',
+            'is_available' => 'required|boolean',
+            'image_url' => 'required'|'image'|'mimes:png,jpg,jpeg|max:2048',
             'description' => 'nullable|string',
             'area' => 'required|integer|min:1',
         ];
