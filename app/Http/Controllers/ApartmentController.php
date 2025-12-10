@@ -25,7 +25,7 @@ class ApartmentController extends Controller
         $user_id=Auth::user()->id;
         $user=Auth::user();
         $validatedData = $request->validated(); 
-               $validatedData['image_url'] = $validatedData['image_url'] ?? 'Unknown';
+               $validatedData['apartment_image'] = $validatedData['apartment_image'] ?? 'Unknown';
 
         $validatedData['user_id'] = $user_id;
         if($user->role=='owner'){
@@ -68,7 +68,7 @@ class ApartmentController extends Controller
     ], 200);
 }
 
-    public function navigateApartments(Request $request)
+    public function filteringApartments(Request $request)
     {
         $query = Apartment::query();
 
@@ -84,9 +84,6 @@ class ApartmentController extends Controller
             $query->where('number_of_rooms', '>=', $request->input('min_number_of_rooms'));
         }
 
-        if ($request->has('max_number_of_rooms')) {
-            $query->where('number_of_rooms', '<=', $request->input('max_number_of_rooms'));
-        }
 
         if ($request->has('city')) {
             $query->where('city', 'like', '%' . $request->input('city') . '%');

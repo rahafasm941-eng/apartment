@@ -14,7 +14,7 @@ class ApartmentFactory extends Factory
             'Latakia', 'Tartus', 'Idlib', 'Raqqa', 'Deir ez-Zor',
             'Al-Hasakah', 'As-Suwayda', 'Daraa', 'Quneitra'
         ];
-
+        $imageUrls= public_path('uploads/apartment_images/');
         return [
             'address' => $this->faker->streetAddress(),
             'city' => $this->faker->randomElement($syrianCities),
@@ -30,13 +30,13 @@ class ApartmentFactory extends Factory
 
             'is_available' => $this->faker->boolean(),
 
-            'image_url' => $this->faker->imageUrl(640, 480, 'apartments', true),
+            'apartment_image' => $this->faker->randomElement([$imageUrls]),
 
             'description' => $this->faker->sentence(12),
 
             'area' => $this->faker->numberBetween(40, 400),
             'features' => json_encode($this->faker->randomElements(
-                ['WiFi', 'Air Conditioning', 'Heating', 'Kitchen', 'Parking', 'Pool', 'Gym', 'Pet Friendly'],
+                ['WiFi', 'Air Conditioning', 'Heating', 'Balcony', 'Parking', 'Pool', 'Pet Friendly'],
                 $this->faker->numberBetween(1, 5)
             )),
              'user_id' => User::where('role', 'owner')->inRandomOrder()->value('id'),

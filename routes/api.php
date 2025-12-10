@@ -24,9 +24,11 @@ Route::get('apartments/{apartment}', [ApartmentController::class, 'show']);
 
 // __________ هدول تبع ال auth لكن بدون otp _____________
 Route::post('/signup', [UserController::class, 'signup']);
+Route::post('/signup/verify-otp', [UserController::class, 'verifySignUpOtp']);
 Route::post('/login', [UserController::class, 'login']);
-Route::post('/logout', [UserController::class, 'logout'])
-        ->middleware('auth:sanctum');
+Route::post('/login/verify-otp', [UserController::class, 'verifyLoginOtp']);
+Route::middleware('auth:sanctum')->post('/logout', [UserController::class, 'logout']);
+// _________________________________________________;
     Route::middleware(['auth:sanctum', 'AdminMiddleware'])->group(function () {
     Route::get('/admin/pending-users', [AdminController::class, 'pendingUsers']);
     Route::post('/admin/approve-user/{id}', [AdminController::class, 'approveUser']);
@@ -35,7 +37,7 @@ Route::post('/logout', [UserController::class, 'logout'])
 //_______________________________________________________________
 
 //_____________ هي تبع الفلترة__________________
-Route::get('navigateApartments', [ApartmentController::class, 'navigateApartments']);
+Route::get('filteringApartments', [ApartmentController::class, 'filteringApartments']);
 //_____________________________________________
 
 // __________هي تبع عرض مواصفات الشقة _____________________

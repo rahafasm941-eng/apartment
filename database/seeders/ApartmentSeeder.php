@@ -10,6 +10,6 @@ class ApartmentSeeder extends Seeder
     public function run(): void
     {
         // إنشاء 20 شقة تجريبية
-        Apartment::factory()->count(20)->create();
+        Apartment::factory()->count(13)->create();
     }
 }

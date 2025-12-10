@@ -32,7 +32,7 @@ class CreateApartmentRequest extends FormRequest
             'number_of_rooms' => 'required|integer|min:1',
             'price_per_month' => 'required|numeric|min:0',
             'is_available' => 'required|boolean',
-            'image_url' => 'required'|'image'|'mimes:png,jpg,jpeg|max:2048',
+            'apartment_image' => 'required|image|mimes:png,jpg,jpeg|max:2048',
             'description' => 'nullable|string',
             'area' => 'required|integer|min:1',
         ];

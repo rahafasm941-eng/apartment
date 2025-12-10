@@ -32,7 +32,7 @@ return new class extends Migration
         $table->boolean('is_available')->default(true);
 
         // Media
-        $table->string('image_url');
+        $table->string('apartment_image');
 
         // Location
         $table->double('latitude', 10, 8);

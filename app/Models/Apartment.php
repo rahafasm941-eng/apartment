@@ -18,7 +18,7 @@ class Apartment extends Model
         'number_of_rooms',
         'bathrooms',
         'is_available',
-        'image_url',
+        'apartment_image',
         'latitude',
         'longitude',
         'features',

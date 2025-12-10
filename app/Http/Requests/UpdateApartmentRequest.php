@@ -32,7 +32,7 @@ class UpdateApartmentRequest extends FormRequest
             'number_of_rooms' => 'sometimes|required|integer|min:1',
             'price_per_month' => 'sometimes|required|numeric|min:0',
             'is_available' => 'sometimes|required|boolean',
-            'image_url' => 'sometimes|required|image|mimes:png,jpg,jpeg|max:2048',
+            'apartment_image' => 'sometimes|required|image|mimes:png,jpg,jpeg|max:2048',
             'description' => 'nullable|string',
             'area' => 'sometimes|required|integer|min:1',
         ];

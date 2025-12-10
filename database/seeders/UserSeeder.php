@@ -10,7 +10,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // إنشاء 10 مستخدمين مالكين (owner)
-        User::factory()->count(10)->state([
+        User::factory()->count(13)->state([
             'role' => 'owner',
         ])->create();
 
