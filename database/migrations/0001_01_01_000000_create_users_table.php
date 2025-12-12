@@ -15,11 +15,11 @@ return new class extends Migration
         $table->id()->unique();
         $table->string('first_name')->nullable();
         $table->string('last_name')->nullable();
-        $table->string('phone')->unique();
+        $table->string('phone');
         $table->string('profile_image')->nullable();
         $table->string('id_image')->nullable();
         $table->date('birth_date')->nullable();
-        $table->enum('role', ['owner', 'renter']);
+        $table->enum('role', ['owner', 'renter','admin']);
         $table->boolean('is_verified')->default(false);
         $table->boolean('is_approved')->default(false); // موافقة الأدمن
         $table->rememberToken();

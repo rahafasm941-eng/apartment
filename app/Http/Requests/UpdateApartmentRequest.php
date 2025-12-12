@@ -31,10 +31,14 @@ class UpdateApartmentRequest extends FormRequest
             'bathrooms' => 'sometimes|required|integer|min:1',
             'number_of_rooms' => 'sometimes|required|integer|min:1',
             'price_per_month' => 'sometimes|required|numeric|min:0',
+            'type'=>'sometimes|required|string',
             'is_available' => 'sometimes|required|boolean',
             'apartment_image' => 'sometimes|required|image|mimes:png,jpg,jpeg|max:2048',
             'description' => 'nullable|string',
             'area' => 'sometimes|required|integer|min:1',
+            'details_image' => 'sometimes|required|array',
+            'details_image.*' => 'image|mimes:png,jpg,jpeg|max:2048',
+            'features' => 'nullable|array',
         ];
     }
 }

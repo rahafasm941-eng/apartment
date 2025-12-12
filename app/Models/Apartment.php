@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Apartment extends Model
 {
     use HasFactory;
+    protected $casts = [
+        'details_image' => 'array',
+    ];
+
     protected $fillable = [
         'address',
         'city',
@@ -15,6 +19,7 @@ class Apartment extends Model
         'description',
         'price_per_month',
         'area',
+        'type',
         'number_of_rooms',
         'bathrooms',
         'is_available',
@@ -23,6 +28,7 @@ class Apartment extends Model
         'longitude',
         'features',
         'user_id',
+        'details_image'
         ];
     public function owner() {
     return $this->belongsTo(User::class, 'user_id');

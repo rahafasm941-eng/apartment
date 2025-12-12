@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
@@ -18,5 +19,14 @@ class UserSeeder extends Seeder
         User::factory()->count(20)->state([
             'role' => 'renter',
         ])->create();
+        User::create([
+            'first_name' => 'admin',
+            'last_name' => 'admin',
+            'phone' => '+963953707821',
+            'role' => 'admin',
+            'profile_image' => 'profile_images/default.png',
+            'birth_date' => '1990-01-01',
+            'is_approved' => true,
+        ]);
     }
 }

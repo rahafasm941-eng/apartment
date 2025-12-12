@@ -21,6 +21,7 @@ return new class extends Migration
         $table->string('city');
         $table->string('neighborhood');
         $table->text('description')->nullable();
+        $table->string('type')->default('economic');
 
         // Pricing
         $table->decimal('price_per_month', 8, 2);
@@ -32,7 +33,9 @@ return new class extends Migration
         $table->boolean('is_available')->default(true);
 
         // Media
-        $table->string('apartment_image');
+        $table->string( 'apartment_image');
+        $table->json( 'details_image');
+
 
         // Location
         $table->double('latitude', 10, 8);

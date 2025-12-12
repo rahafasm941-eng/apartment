@@ -27,7 +27,7 @@ class User extends Authenticatable
         'id_image',
         'birth_date',
         'role',
-        'is_approved'
+        'is_approved',
     ];
     public function apartments() {
     return $this->hasMany(Apartment::class);
@@ -59,8 +59,8 @@ public function reviews() {
     protected function casts(): array
     {
         return [
-           // 'email_verified_at' => 'datetime',
-            //'password' => 'hashed',
+           'email_verified_at' => 'datetime',
+            'password' => 'hashed',
         ];
     }
 }

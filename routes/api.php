@@ -22,17 +22,17 @@ Route::get('apartments/{apartment}', [ApartmentController::class, 'show']);
 // ________________________________________________
 
 
-// __________ هدول تبع ال auth لكن بدون otp _____________
+// __________ هدول تبع ال auth  _____________
 Route::post('/signup', [UserController::class, 'signup']);
 Route::post('/signup/verify-otp', [UserController::class, 'verifySignUpOtp']);
 Route::post('/login', [UserController::class, 'login']);
 Route::post('/login/verify-otp', [UserController::class, 'verifyLoginOtp']);
 Route::middleware('auth:sanctum')->post('/logout', [UserController::class, 'logout']);
-// _________________________________________________;
+// ________________________هدول للأدمن_________________________;
     Route::middleware(['auth:sanctum', 'AdminMiddleware'])->group(function () {
     Route::get('/admin/pending-users', [AdminController::class, 'pendingUsers']);
-    Route::post('/admin/approve-user/{id}', [AdminController::class, 'approveUser']);
-    Route::post('/admin/reject-user/{id}', [AdminController::class, 'rejectUser']);
+    Route::post('/admin/approve-user', [AdminController::class, 'approveUser']);
+    Route::post('/admin/reject-user', [AdminController::class, 'rejectUser']);
 });
 //_______________________________________________________________
 
@@ -42,6 +42,14 @@ Route::get('filteringApartments', [ApartmentController::class, 'filteringApartme
 
 // __________هي تبع عرض مواصفات الشقة _____________________
 Route::get('ApartmentDetails', [ApartmentController::class, 'ApartmentDetails']);
+//_____________________________________________
+
+//_________________________هي تبع البحث حسب المدينة_____________________________
+Route::get('SearchByCity',[ApartmentController::class,'SearchByCity']);
+//_____________________________________________
+
+//_________________________________هي انو يجيب كل الشقق بصفحة الهوم_________________________________
+Route::get('allApartments',[ApartmentController::class,'index']);
 //__________________________________________________
 
 

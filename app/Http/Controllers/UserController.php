@@ -4,11 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\PendingUser;
 use App\Models\User;
+use Database\Seeders\UserSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Exceptions;
+use Illuminate\Support\Facades\Hash;
+use League\CommonMark\Extension\SmartPunct\ReplaceUnpairedQuotesListener;
 class UserController extends Controller
 {
     // Sign Up
@@ -17,7 +21,7 @@ class UserController extends Controller
         $request->validate([
             'first_name' => 'required|string|max:50',
             'last_name'  => 'required|string|max:50',
-            'phone'      => 'required|string|digits:10|unique:pending_users,phone|unique:users,phone',
+            'phone'      => 'required|string|digits:9|unique:users,phone', //|unique:pending_users,phone'
             'role'       => 'required|in:owner,renter',
             'profile_image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
             'id_image' => 'required|image|mimes:jpg,jpeg,png|max:4096',
@@ -32,18 +36,25 @@ class UserController extends Controller
         $pendingUser = PendingUser::create([
             'first_name' => $request->first_name,
             'last_name'  => $request->last_name,
-            'phone'      => '+963'.$request->phone,
+            'phone'      => $request->phone,
             'role'       => $request->role,
             'profile_image' => $profileImagePath,
             'id_image' => $idImagePath,
             'birth_date' => $request->birth_date,
         ]);
+        // Check for existing user with same phone
+    $existingUser = User::where('phone', '+963'.$pendingUser->phone)->first();
+    if ($existingUser) {
+        $pendingUser->delete(); // حذف pending user لأن الرقم مسجل مسبقاً
+        return response()->json(['message' => 'Phone number already registered.'], 409);
+
+    }
 
         // إرسال OTP على WhatsApp
         $otp = rand(100000, 999999);
         Cache::put('otp_'.$pendingUser->phone, $otp, now()->addMinutes(5));
 
-    $this->sendUltraMsgOtp($pendingUser->phone, $otp);
+    $this->sendUltraMsgOtp('+963'.$pendingUser->phone, $otp);
         return response()->json([
             'message' => 'Pending user created. Enter OTP sent via WhatsApp.',
             'pending_user_id' => $pendingUser->id,
@@ -66,45 +77,75 @@ class UserController extends Controller
 
     // Verify OTP بعد Sign Up
     public function verifySignUpOtp(Request $request)
-    {
-        
-        $request->validate([
-            'pending_user_id' => 'required|exists:pending_users,id',
-            'otp' => 'required|digits:6',
-        ]);
+{
+    $request->validate([
+        'pending_user_id' => 'required|exists:pending_users,id',
+        'otp' => 'required|digits:6',
+    ]);
 
-        $pendingUser = PendingUser::findOrFail($request->pending_user_id);
-
-        $cachedOtp = Cache::get('otp_'.$pendingUser->phone);
-        if (!$cachedOtp) 
-            {$pendingUser->delete();
+    $pendingUser = PendingUser::findOrFail($request->pending_user_id);
+    $phoneKey = $pendingUser->phone;
+    $cacheKey = 'otp_' . $phoneKey;
+    $userOtp = (int)$request->otp; // ✅ تحويل لـ integer
+    
+    // ✅ Logs كاملة
+    Log::info("=== VERIFY OTP DEBUG ===");
+    Log::info("Phone from DB: {$phoneKey}");
+    Log::info("Cache key: {$cacheKey}");
+    Log::info("User OTP (int): {$userOtp}");
+    Log::info("User OTP (string): '{$request->otp}'");
+    
+    $cachedOtp = Cache::get($cacheKey);
+    Log::info("Cached OTP: " . ($cachedOtp ?? 'NULL'));
+    
+    if (!$cachedOtp) {
+        Log::warning("OTP NULL/expired for {$cacheKey}");
+        $pendingUser->delete();
         return response()->json(['message' => 'OTP expired'], 400);
-            }
-        if ($cachedOtp != $request->otp) return response()->json(['message' => 'Invalid OTP'], 400);
+    }
+    
+    if ((int)$cachedOtp !== $userOtp) {
+        Log::warning("OTP mismatch. Expected: {$cachedOtp}, Got: {$userOtp}");
+        return response()->json(['message' => 'Invalid OTP'], 400);
+    }
+    
+    // ✅ نجح
+    Log::info("OTP verified successfully for {$phoneKey}");
+    Cache::forget($cacheKey);
 
-        Cache::forget('otp_'.$pendingUser->phone);
-        $user=User::create([
-            'first_name' => $pendingUser->first_name,
-            'last_name'  => $pendingUser->last_name,
-            'phone'      => $pendingUser->phone,
-            'role'       => $pendingUser->role,
-            'profile_image' => $pendingUser->profile_image,
-            'id_image' => $pendingUser->id_image,
-            'birth_date' => $pendingUser->birth_date,
-            'is_approved' => false, // بانتظار موافقة الأدمن
+    
+
+    DB::beginTransaction();
+    try {
+        $user = User::create([
+            'first_name'     => $pendingUser->first_name,
+            'last_name'      => $pendingUser->last_name,
+            'phone'          => '+963'.$pendingUser->phone,
+            'role'           => $pendingUser->role,
+            'profile_image'  => $pendingUser->profile_image,
+            'id_image'       => $pendingUser->id_image,
+            'birth_date'     => $pendingUser->birth_date,
+            'is_approved'    => false,
         ]);
         $pendingUser->delete();
 
+        DB::commit();
+
         return response()->json([
             'message' => 'OTP verified successfully. Waiting for admin approval.',
-            'user' => $user
+            'user'    => $user
         ]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        // تسجيل/log بسيط للخطاء قد تحتاجه لوبئة
+        return response()->json(['message' => 'Failed to create user.'], 500);
     }
+}
 
     // Login - إرسال OTP
     public function login(Request $request)
     {
-        $request->validate(['phone' => 'required|digits:10']);
+        $request->validate(['phone' => 'required|digits:9']);
 
         $phone = '+963'.$request->phone;
         $user = User::where('phone', $phone)->first();
@@ -124,7 +165,7 @@ class UserController extends Controller
     public function verifyLoginOtp(Request $request)
     {
         $request->validate([
-            'phone' => 'required|digits:10',
+            'phone' => 'required|digits:9',
             'otp' => 'required|digits:6',
         ]);
 
@@ -149,7 +190,7 @@ class UserController extends Controller
             'user' => $user
         ]);
     }
-
+   
     // Logout
     public function logout(Request $request)
     {

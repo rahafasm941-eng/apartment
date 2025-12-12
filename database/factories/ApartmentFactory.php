@@ -15,10 +15,12 @@ class ApartmentFactory extends Factory
             'Al-Hasakah', 'As-Suwayda', 'Daraa', 'Quneitra'
         ];
         $imageUrls= public_path('uploads/apartment_images/');
+       $address=['luxurious' , 'mid' , 'old'];
         return [
-            'address' => $this->faker->streetAddress(),
             'city' => $this->faker->randomElement($syrianCities),
-            'neighborhood' => $this->faker->word(),
+          'address' => $this->faker->randomElement($address),
+
+            'neighborhood' => $this->faker->address(),
 
             'latitude' => $this->faker->latitude(-90, 90),
             'longitude' => $this->faker->longitude(-180, 180),
