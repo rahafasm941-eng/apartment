@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('pending_users', function (Blueprint $table) {
     $table->id();
-    $table->string('first_name');
-    $table->string('last_name');
+    // $table->string('first_name');
+    // $table->string('last_name');
     $table->string('phone')->unique();
-    $table->string('role');
-    $table->date('birth_date');
-    $table->string('profile_image_temp')->default('');
-    $table->string('id_image_temp')->default('');
+    // $table->string('role');
+    // $table->date('birth_date');
+    // $table->string('profile_image_temp')->default('');
+    // $table->string('id_image_temp')->default('');
     $table->timestamps();
 });
 

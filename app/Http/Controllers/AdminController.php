@@ -16,14 +16,12 @@ class AdminController extends Controller
 //1|cduOqBTqXzOwytD6wwmPyThA2hhssrf0rg3z74kdd4cadfa2
     public function approveUser(Request $request)
     {
-        $validatedData = $request->validate([
-            'first_name' => 'required|string',
-            'last_name' => 'required|string',
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
         ]);
-        $user = User::where('first_name', $validatedData['first_name'])
-                    ->where('last_name', $validatedData['last_name'])
-                    ->firstOrFail();
-                    
+
+        $user = User::findOrFail($request->user_id);
+        
         if ($user->role === 'admin') {
             return response()->json(['message' => 'Cannot approve admin account'], 403);
         }
@@ -36,16 +34,11 @@ class AdminController extends Controller
 
     public function rejectUser(Request $request)
     {
-        $validatedData = $request->validate([
-            'first_name' => 'required|string',
-            'last_name' => 'required|string',
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
         ]);
-        $first_name = $validatedData['first_name'];
-        $last_name = $validatedData['last_name'];
-    {
-        $user = User::where('first_name', $first_name)
-                    ->where('last_name', $last_name)
-                    ->firstOrFail();
+
+        $user = User::findOrFail($request->user_id);
 
         if ($user->role === 'admin') {
             return response()->json(['message' => 'Cannot reject admin'], 403);
@@ -55,5 +48,4 @@ class AdminController extends Controller
 
         return response()->json(['message' => 'User rejected and removed']);
     }
-}
 }

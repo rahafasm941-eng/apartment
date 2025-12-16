@@ -78,9 +78,7 @@ class ApartmentController extends Controller
         if ($request->has('min_number_of_rooms')) {
             $query->where('number_of_rooms', '>=', $request->min_number_of_rooms);
         }
-        if ($request->has('city')) {
-            $query->where('city', 'like', '%' . $request->city . '%');
-        }
+        
         if ($request->has('neighborhood')) {
             $query->where('neighborhood', 'like', '%' . $request->neighborhood . '%');
         }

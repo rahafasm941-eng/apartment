@@ -8,8 +8,8 @@ class UserFactory extends Factory
 {
     public function definition(): array
     {
-        $firstNames = ['أحمد', 'محمد', 'علي', 'يوسف', 'سارة', 'ليلى', 'مريم', 'هند', 'فاطمة', 'نور'];
-        $lastNames  = ['النجار', 'الخطيب', 'الحسني', 'العلي', 'الحموي', 'السالم', 'المصري', 'اليوسف'];
+        $firstNames = ['Ahmad', 'mohammad', 'ali', 'yousef', 'sara', 'laila', 'mary', 'hind', 'fatima', 'noor'];
+        $lastNames  = ['al-najar', 'al-khateeb', 'al-housny', 'al-ali', 'al-hamwy', 'al-salem', 'al-masri', 'al-yousef'];
 
         // اختيار عشوائي
         $first_name = $this->faker->randomElement($firstNames);

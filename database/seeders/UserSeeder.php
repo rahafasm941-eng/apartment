@@ -28,5 +28,14 @@ class UserSeeder extends Seeder
             'birth_date' => '1990-01-01',
             'is_approved' => true,
         ]);
+        User::create([
+            'first_name' => 'admin2',
+            'last_name' => 'admin2',
+            'phone' => '+963952659451',
+            'role' => 'admin',
+            'profile_image' => 'profile_images/default.png',
+            'birth_date' => '1990-01-01',
+            'is_approved' => true,
+        ]);
     }
 }

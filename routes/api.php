@@ -23,8 +23,10 @@ Route::get('apartments/{apartment}', [ApartmentController::class, 'show']);
 
 
 // __________ هدول تبع ال auth  _____________
-Route::post('/signup', [UserController::class, 'signup']);
-Route::post('/signup/verify-otp', [UserController::class, 'verifySignUpOtp']);
+Route::post('/signup/phone', [UserController::class, 'signupPhone']);           // خطوة 1
+Route::post('/verify-phone-otp',[ UserController::class,'verifySignUpOtp']);   // خطوة 2  
+Route::post('/complete-profile',[UserController::class, 'completeProfile']);    // خطوة 3
+
 Route::post('/login', [UserController::class, 'login']);
 Route::post('/login/verify-otp', [UserController::class, 'verifyLoginOtp']);
 Route::middleware('auth:sanctum')->post('/logout', [UserController::class, 'logout']);

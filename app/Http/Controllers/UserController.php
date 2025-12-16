@@ -1,82 +1,88 @@
 <?php
 
+
 namespace App\Http\Controllers;
 
-use App\Models\PendingUser;
-use App\Models\User;
-use Database\Seeders\UserSeeder;
 use Illuminate\Http\Request;
+use App\Models\User;
+use App\Models\PendingUser;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Exceptions;
-use Illuminate\Support\Facades\Hash;
-use League\CommonMark\Extension\SmartPunct\ReplaceUnpairedQuotesListener;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+
 class UserController extends Controller
 {
-    // Sign Up
-    public function signup(Request $request)
+    public function signupPhone(Request $request)
     {
         $request->validate([
-            'first_name' => 'required|string|max:50',
-            'last_name'  => 'required|string|max:50',
-            'phone'      => 'required|string|digits:9|unique:users,phone', //|unique:pending_users,phone'
-            'role'       => 'required|in:owner,renter',
-            'profile_image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-            'id_image' => 'required|image|mimes:jpg,jpeg,png|max:4096',
-            'birth_date' => ['required','date','before_or_equal:' . now()->subYears(18)->format('Y-m-d')],
+            'phone' => 'required|string|digits:9|unique:users,phone|unique:pending_users,phone',
         ]);
 
-        // حفظ الصور
-        $profileImagePath = $request->file('profile_image')->store('profile_images', 'public');
-        $idImagePath      = $request->file('id_image')->store('id_images', 'public');
+        $existingUser = User::where('phone', '+963' . $request->phone)->first();
+        
+        if ($existingUser) {
+            return response()->json(['message' => 'Phone number already registered.'], 400);
+        }
 
-        // حفظ المستخدم في pending_users
         $pendingUser = PendingUser::create([
-            'first_name' => $request->first_name,
-            'last_name'  => $request->last_name,
-            'phone'      => $request->phone,
-            'role'       => $request->role,
-            'profile_image' => $profileImagePath,
-            'id_image' => $idImagePath,
-            'birth_date' => $request->birth_date,
+            'phone' => $request->phone,
         ]);
-        // Check for existing user with same phone
-    $existingUser = User::where('phone', '+963'.$pendingUser->phone)->first();
-    if ($existingUser) {
-        $pendingUser->delete(); // حذف pending user لأن الرقم مسجل مسبقاً
-        return response()->json(['message' => 'Phone number already registered.'], 409);
 
-    }
-
-        // إرسال OTP على WhatsApp
         $otp = rand(100000, 999999);
-        Cache::put('otp_'.$pendingUser->phone, $otp, now()->addMinutes(5));
+        Cache::put('otp_' . $pendingUser->phone, $otp, now()->addMinutes(5));
+        
+        // Log للتأكد
+        Log::info('OTP Generated: ' . $otp . ' for phone: ' . $pendingUser->phone);
+        
+        $this->sendUltraMsgOtp('+963' . $pendingUser->phone, $otp);
 
-    $this->sendUltraMsgOtp('+963'.$pendingUser->phone, $otp);
         return response()->json([
-            'message' => 'Pending user created. Enter OTP sent via WhatsApp.',
+            'message' => 'OTP sent via WhatsApp. Please verify.',
             'pending_user_id' => $pendingUser->id,
         ], 201);
     }
 
-    // إرسال OTP helper
-    private function sendWhatsAppOtp($phone, $otp)
+    // باقي الدوال زي ما هي... (صحيحة 100%)
+    
+    private function sendUltraMsgOtp($phone, $otp)
     {
-        $url = "https://graph.facebook.com/v17.0/".env('WHATSAPP_PHONE_NUMBER_ID')."/messages";
+        $params = [
+            'token' => env('ULTRAMSG_TOKEN'),
+            'to'    => $phone,
+            'body'  => "Your verification code is: $otp",
+        ];
 
-        Http::withToken(env('WHATSAPP_TOKEN'))
-            ->post($url, [
-                "messaging_product" => "whatsapp",
-                "to" => $phone,
-                "type" => "text",
-                "text" => ["body" => "Your verification code is: $otp"]
-            ]);
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "https://api.ultramsg.com/instance155393/messages/chat",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => http_build_query($params),
+            CURLOPT_HTTPHEADER => ["content-type: application/x-www-form-urlencoded"],
+        ]);
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        curl_close($curl);
+
+        if ($err) {
+            Log::error("UltraMSG Error: " . $err);
+            return false;
+        }
+
+        Log::info("WhatsApp sent successfully to {$phone}");
+        return $response;
     }
 
-    // Verify OTP بعد Sign Up
-    public function verifySignUpOtp(Request $request)
+
+
+
+
+
+
+// 2. التحقق من OTP
+public function verifySignUpOtp(Request $request)
 {
     $request->validate([
         'pending_user_id' => 'required|exists:pending_users,id',
@@ -86,62 +92,82 @@ class UserController extends Controller
     $pendingUser = PendingUser::findOrFail($request->pending_user_id);
     $phoneKey = $pendingUser->phone;
     $cacheKey = 'otp_' . $phoneKey;
-    $userOtp = (int)$request->otp; // ✅ تحويل لـ integer
+    $userOtp = (int)$request->otp;
     
-    // ✅ Logs كاملة
     Log::info("=== VERIFY OTP DEBUG ===");
-    Log::info("Phone from DB: {$phoneKey}");
-    Log::info("Cache key: {$cacheKey}");
-    Log::info("User OTP (int): {$userOtp}");
-    Log::info("User OTP (string): '{$request->otp}'");
-    
+    Log::info("Phone: {$phoneKey}, User OTP: {$userOtp}, Cached OTP: " . (Cache::get($cacheKey) ?? 'NULL'));
+
     $cachedOtp = Cache::get($cacheKey);
-    Log::info("Cached OTP: " . ($cachedOtp ?? 'NULL'));
-    
-    if (!$cachedOtp) {
-        Log::warning("OTP NULL/expired for {$cacheKey}");
+    if (!$cachedOtp || (int)$cachedOtp !== $userOtp) {
+        Log::warning("OTP failed for {$phoneKey}");
         $pendingUser->delete();
-        return response()->json(['message' => 'OTP expired'], 400);
+        return response()->json(['message' => 'Invalid or expired OTP'], 400);
     }
-    
-    if ((int)$cachedOtp !== $userOtp) {
-        Log::warning("OTP mismatch. Expected: {$cachedOtp}, Got: {$userOtp}");
-        return response()->json(['message' => 'Invalid OTP'], 400);
-    }
-    
-    // ✅ نجح
+
+    // حفظ session أو token مؤقت للـ pending_user للخطوة التالية
+    $tempToken = Str::random(40);
+    Cache::put('verified_phone_'.$tempToken, $pendingUser->phone, now()->addHours(1));
+
     Log::info("OTP verified successfully for {$phoneKey}");
     Cache::forget($cacheKey);
+    $pendingUser->delete();
 
-    
+    return response()->json([
+        'message' => 'Phone verified successfully!',
+        'temp_token' => $tempToken, // للاستخدام في الخطوة التالية
+    ]);
+}
+
+// 3. خطوة ثالثة: إدخال البيانات الشخصية (بعد التحقق من الهاتف)
+public function completeProfile(Request $request)
+{
+    $request->validate([
+        'temp_token' => 'required',
+        'first_name' => 'required|string|max:50',
+        'last_name' => 'required|string|max:50',
+        'role' => 'required|in:owner,renter',
+        'profile_image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+        'id_image' => 'required|image|mimes:jpg,jpeg,png|max:4096',
+        'birth_date' => ['required','date','before_or_equal:' . now()->subYears(18)->format('Y-m-d')],
+    ]);
+
+    // التحقق من الـ temp_token
+    $verifiedPhone = Cache::get('verified_phone_'.$request->temp_token);
+    if (!$verifiedPhone) {
+        return response()->json(['message' => 'Phone verification expired or invalid'], 400);
+    }
+
+    // حفظ الصور
+    $profileImagePath = $request->file('profile_image')->store('profile_images', 'public');
+    $idImagePath = $request->file('id_image')->store('id_images', 'public');
 
     DB::beginTransaction();
     try {
         $user = User::create([
-            'first_name'     => $pendingUser->first_name,
-            'last_name'      => $pendingUser->last_name,
-            'phone'          => '+963'.$pendingUser->phone,
-            'role'           => $pendingUser->role,
-            'profile_image'  => $pendingUser->profile_image,
-            'id_image'       => $pendingUser->id_image,
-            'birth_date'     => $pendingUser->birth_date,
-            'is_approved'    => false,
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'phone' => '+963'.$verifiedPhone,
+            'role' => $request->role,
+            'profile_image' => $profileImagePath,
+            'id_image' => $idImagePath,
+            'birth_date' => $request->birth_date,
+            // 'is_approved' => false, // إذا كنت تستخدم هذا
         ]);
-        $pendingUser->delete();
 
         DB::commit();
+        Cache::forget('verified_phone_'.$request->temp_token);
 
         return response()->json([
-            'message' => 'OTP verified successfully. Waiting for admin approval.',
-            'user'    => $user
-        ]);
+            'message' => 'Profile completed successfully! Waiting for admin approval.',
+            'user' => $user
+        ], 201);
+
     } catch (\Exception $e) {
         DB::rollBack();
-        // تسجيل/log بسيط للخطاء قد تحتاجه لوبئة
-        return response()->json(['message' => 'Failed to create user.'], 500);
+        Log::error('Complete profile failed: ' . $e->getMessage());
+        return response()->json(['message' => 'Failed to create user'], 500);
     }
 }
-
     // Login - إرسال OTP
     public function login(Request $request)
     {
@@ -197,34 +223,5 @@ class UserController extends Controller
         $request->user()->currentAccessToken()->delete();
         return response()->json(['message'=>'Logged out']);
     }
-    private function sendUltraMsgOtp($phone, $otp)
-{
-    $params = [
-        'token' => env('ULTRAMSG_TOKEN'),
-        'to'    => $phone,   // رقم الهاتف يجب أن يكون بصيغة +9639xxxx
-        'body'  => "Your verification code is: $otp",
-    ];
-
-    $curl = curl_init();
-
-    curl_setopt_array($curl, [
-        CURLOPT_URL => "https://api.ultramsg.com/instance155393/messages/chat",
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => http_build_query($params),
-        CURLOPT_HTTPHEADER => ["content-type: application/x-www-form-urlencoded"],
-    ]);
-
-    $response = curl_exec($curl);
-    $err = curl_error($curl);
-
-    curl_close($curl);
-
-    if ($err) {
-        Log::error("UltraMSG Error: " . $err);
-        return false;
-    }
-
-    return $response;
-}
+   
 }
