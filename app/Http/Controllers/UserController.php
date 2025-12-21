@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\PendingUser;
+use App\Models\Profile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -153,6 +154,10 @@ public function completeProfile(Request $request)
             'birth_date' => $request->birth_date,
             // 'is_approved' => false, // إذا كنت تستخدم هذا
         ]);
+        $profile=Profile::create([
+            'user_id'=>$user->id,
+            'avatar'=>$user->$profileImagePath,
+        ]);
 
         DB::commit();
         Cache::forget('verified_phone_'.$request->temp_token);
@@ -223,5 +228,8 @@ public function completeProfile(Request $request)
         $request->user()->currentAccessToken()->delete();
         return response()->json(['message'=>'Logged out']);
     }
-   
+    public function getProfile(Request $request)
+    {
+        return response()->json($request->user());
+    }
 }

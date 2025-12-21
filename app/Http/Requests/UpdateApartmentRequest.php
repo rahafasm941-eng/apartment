@@ -41,4 +41,4 @@ class UpdateApartmentRequest extends FormRequest
             'features' => 'nullable|array',
         ];
     }
-}
+} 

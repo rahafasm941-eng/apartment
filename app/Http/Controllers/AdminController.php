@@ -12,8 +12,13 @@ class AdminController extends Controller
         return User::where('is_approved', false)
                    ->where('role', '!=', 'admin')
                    ->get();
+    } 
+    public function approvedUsers()
+    {
+        return User::where('is_approved', true)
+                   ->where('role', '!=', 'admin')
+                   ->get();
     }
-//1|cduOqBTqXzOwytD6wwmPyThA2hhssrf0rg3z74kdd4cadfa2
     public function approveUser(Request $request)
     {
         $request->validate([

@@ -40,7 +40,10 @@ public function bookings() {
 public function reviews() {
     return $this->hasMany(Review::class);
 }
-
+public function profile()
+{
+    return $this->hasOne(Profile::class);
+}
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -63,4 +66,5 @@ public function reviews() {
             'password' => 'hashed',
         ];
     }
+    
 }

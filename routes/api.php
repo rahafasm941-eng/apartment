@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->post('/logout', [UserController::class, 'logo
 // ________________________هدول للأدمن_________________________;
     Route::middleware(['auth:sanctum', 'AdminMiddleware'])->group(function () {
     Route::get('/admin/pending-users', [AdminController::class, 'pendingUsers']);
+    Route::get('/admin/approved-users', [AdminController::class, 'approvedUsers']);
     Route::post('/admin/approve-user', [AdminController::class, 'approveUser']);
     Route::post('/admin/reject-user', [AdminController::class, 'rejectUser']);
 });
@@ -53,6 +54,10 @@ Route::get('SearchByCity',[ApartmentController::class,'SearchByCity']);
 //_________________________________هي انو يجيب كل الشقق بصفحة الهوم_________________________________
 Route::get('allApartments',[ApartmentController::class,'index']);
 //__________________________________________________
+
+//___________هي تبع عرض البروفايل ________________
+Route::get('user/profile',[UserController::class,'getProfile']);
+//_________________________________________
 
 
         
