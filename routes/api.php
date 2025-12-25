@@ -19,6 +19,8 @@ Route::delete('apartments', [ApartmentController::class, 'destroy'])
     ->middleware('auth:sanctum');
 Route::get('apartments', [ApartmentController::class, 'index']);
 Route::get('apartments', [ApartmentController::class, 'show']);
+Route::get('OwnerApartments', [ApartmentController::class, 'OwnerApartments'])
+    ->middleware('auth:sanctum');
 // ________________________________________________
 
 // __________ هدول تبع الحجز _____________
@@ -30,8 +32,10 @@ Route::post('approve-booking',[BookingController::class,'approveBooking']);
 Route::get('user/booking',[BookingController::class,'userBookings']);
 Route::post('update-booking',[BookingController::class,'updateBooking']);
 Route::post('bookingApproveUpdate',[BookingController::class,'approveBookingUpdate']);
+Route::get('pending-booking',[BookingController::class,'pendingBookings']);
 });
 // ________________________________________________
+
 
 // __________ هدول تبع ال auth  _____________
 Route::post('/signup/phone', [UserController::class, 'signupPhone']);           // خطوة 1

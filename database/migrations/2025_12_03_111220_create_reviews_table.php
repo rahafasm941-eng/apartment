@@ -20,18 +20,16 @@ return new class extends Migration
               ->constrained()
               ->onDelete('cascade');
 
-      //   $table->foreignId('apartment_id')
-      //         ->constrained()
-      //         ->onDelete('cascade');
-
-        $table->foreignId('booking_id')
+        $table->foreignId('apartment_id')
               ->constrained()
               ->onDelete('cascade');
 
+        // $table->foreignId('booking_id')
+        //       ->constrained()
+        //       ->onDelete('cascade');
+
         // Review Data
-        $table->tinyInteger('rating') // 1 to 5
-              ->unsigned()
-              ->comment('Rating from 1 to 5');
+        $table->enum('rating', ['1', '2', '3', '4', '5']);
 
         $table->text('comment')->nullable();
     });

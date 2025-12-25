@@ -142,4 +142,16 @@ class ApartmentController extends Controller
 
         return response()->json($apartments, 200);
     }
+    public function OwnerApartments()
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'owner') {
+            return response()->json(['message' => 'Only owners can view their apartments'], 403);
+        }
+
+        $apartments = Apartment::where('user_id', $user->id)->get();
+
+        return response()->json($apartments, 200);
+    }
 }

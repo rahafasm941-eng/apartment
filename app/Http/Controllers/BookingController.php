@@ -277,7 +277,7 @@ public function approveBookingUpdate(Request $request)
             ->get();
         
         $now = now();
-        
+        $user_info=User::select('first_name', 'last_name', 'phone', 'id')->where('id',$userId)->first();
         $summary = [
             'active' => $bookings->where('status', 'pending')->where('end_date', '>=', $now->format('Y-m-d')),
             'past' => $bookings->where('end_date', '<', $now->format('Y-m-d')),
@@ -286,6 +286,7 @@ public function approveBookingUpdate(Request $request)
 
         return response()->json([
             'all_bookings' => $bookings,
+            'user_info' => $user_info,
             'categorized' => $summary
         ], 200);
     }
@@ -344,4 +345,21 @@ public function approveBookingUpdate(Request $request)
             'booking_status' => $booking->status
         ], 200);
     }
+    public function pendingBookings(){
+        $user=Auth::user();
+        if($user->role != 'owner'){
+            return response()->json(['message' => 'غير مصرح لك بالوصول إلى هذه البيانات'], 403);
+        }
+        $owner_id = $user->id;
+        $apartments = Apartment::where('user_id', $owner_id)->pluck('id');
+        $bookings = Booking::with('apartment','user')
+            ->whereIn('apartment_id', $apartments)
+            ->where('status','pending')
+            ->orderBy('created_at', 'desc')
+            ->get();
+            return response()->json([
+                'pending_bookings' => $bookings
+            ], 200);
+    }
+
 }
