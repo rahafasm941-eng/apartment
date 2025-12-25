@@ -213,7 +213,9 @@ public function updateBooking(Request $request)
             'start_date' => $start_new,
             'end_date' => $end_new,
             'total_price' => $total_price,
+            'status' => 'pending',
         ]);
+    
 
         DB::commit();
 
@@ -228,6 +230,42 @@ public function updateBooking(Request $request)
         return response()->json(['message' => 'حدث خطأ أثناء التحديث'], 500);
     }
 }
+public function approveBookingUpdate(Request $request)
+    {
+        $user = Auth::user();
+        $owner_id = $user->id;
+        
+        if ($user->role != 'owner') {
+            return response()->json(['message' => 'غير مصرح لك بالموافقة على هذا التحديث'], 403);
+        }   
+        
+        $request->validate([
+            'id' => 'required|exists:bookings,id'
+        ]);
+        
+        $booking = Booking::find($request->id);
+        
+        if (!$booking) {
+            return response()->json(['message' => 'الحجز غير موجود'], 404);
+        }
+        
+        if ($booking->status != 'pending') {
+            return response()->json(['message' => 'لا يمكن الموافقة على هذا التحديث'], 400);
+        }
+        
+        if ($booking->apartment->owner_id != $owner_id) {
+            return response()->json(['message' => 'غير مصرح لك بالموافقة على هذا التحديث'], 403);
+        }
+        
+        $booking->status = 'approved';
+        $booking->save();
+        
+        return response()->json([
+            'message' => 'تمت الموافقة على تحديث الحجز بنجاح',
+            'booking_status' => $booking->status
+        ], 200);
+        
+    }
 
 
     public function userBookings(Request $request)
@@ -243,7 +281,7 @@ public function updateBooking(Request $request)
         $summary = [
             'active' => $bookings->where('status', 'pending')->where('end_date', '>=', $now->format('Y-m-d')),
             'past' => $bookings->where('end_date', '<', $now->format('Y-m-d')),
-            'cancelled' => $bookings->where('status', 'cancelled'),
+            'canceled' => $bookings->where('status', 'canceled'),
         ];
 
         return response()->json([

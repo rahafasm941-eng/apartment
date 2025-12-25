@@ -29,6 +29,7 @@ Route::get('owner/bookings',[BookingController::class,'ownerBookings']);
 Route::post('approve-booking',[BookingController::class,'approveBooking']);
 Route::get('user/booking',[BookingController::class,'userBookings']);
 Route::post('update-booking',[BookingController::class,'updateBooking']);
+Route::post('bookingApproveUpdate',[BookingController::class,'approveBookingUpdate']);
 });
 // ________________________________________________
 
