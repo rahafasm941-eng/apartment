@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Apartment;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -53,4 +54,23 @@ class AdminController extends Controller
 
         return response()->json(['message' => 'User rejected and removed']);
     }
+    public function allUsers()
+    {
+        return User::where('role', '!=', 'admin')->get();
+    }
+    public function allApartments(){
+        return Apartment::all();
+    }
+    public function deleteApartment(Request $request)
+    {
+        $request->validate([
+            'apartment_id' => 'required|exists:apartments,id',
+        ]);
+
+        $apartment = Apartment::findOrFail($request->apartment_id);
+        $apartment->delete();
+
+        return response()->json(['message' => 'Apartment deleted successfully']);
+    }
+    
 }

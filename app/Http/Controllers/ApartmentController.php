@@ -39,10 +39,10 @@ class ApartmentController extends Controller
         return response()->json(['message' => 'Only owners can create apartments'], 403);
     }
 
-    public function edit(UpdateApartmentRequest $request, Apartment $apartment)
+    public function edit(UpdateApartmentRequest $request)
     {
         $user = Auth::user();
-
+        $apartment = Apartment::find($request->apartment_id);
         if ($user->role !== 'owner' || $apartment->user_id !== $user->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -52,9 +52,10 @@ class ApartmentController extends Controller
         return response()->json($apartment, 200);
     }
 
-    public function destroy(Apartment $apartment)
+    public function destroy(Request $request)
     {
         $user = Auth::user();
+        $apartment = Apartment::find($request->apartment_id);
 
         if ($user->role !== 'owner' || $apartment->user_id !== $user->id) {
             return response()->json(['message' => 'Unauthorized'], 403);

@@ -48,32 +48,41 @@ class UserController extends Controller
     
     private function sendUltraMsgOtp($phone, $otp)
     {
-        $params = [
-            'token' => env('ULTRAMSG_TOKEN'),
-            'to'    => $phone,
-            'body'  => "Your verification code is: $otp",
-        ];
+     
 
-        $curl = curl_init();
-        curl_setopt_array($curl, [
-            CURLOPT_URL => "https://api.ultramsg.com/instance155393/messages/chat",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => http_build_query($params),
-            CURLOPT_HTTPHEADER => ["content-type: application/x-www-form-urlencoded"],
-        ]);
 
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-        curl_close($curl);
+$params=array(
+'token' => 'jwtoaxmxqtwq9zgr',
+'to' => $phone,
+'body' => 'your OTP code is: ' . $otp
+);
+$curl = curl_init();
+curl_setopt_array($curl, array(
+  CURLOPT_URL => "https://api.ultramsg.com/instance155393/messages/chat",
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_ENCODING => "",
+  CURLOPT_MAXREDIRS => 10,
+  CURLOPT_TIMEOUT => 30,
+  CURLOPT_SSL_VERIFYHOST => 0,
+  CURLOPT_SSL_VERIFYPEER => 0,
+  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_CUSTOMREQUEST => "POST",
+  CURLOPT_POSTFIELDS => http_build_query($params),
+  CURLOPT_HTTPHEADER => array(
+    "content-type: application/x-www-form-urlencoded"
+  ),
+));
 
-        if ($err) {
-            Log::error("UltraMSG Error: " . $err);
-            return false;
-        }
+$response = curl_exec($curl);
+$err = curl_error($curl);
 
-        Log::info("WhatsApp sent successfully to {$phone}");
-        return $response;
+curl_close($curl);
+
+if ($err) {
+  echo "cURL Error #:" . $err;
+} else {
+  echo $response;
+}
     }
 
 
@@ -173,6 +182,7 @@ public function completeProfile(Request $request)
         return response()->json(['message' => 'Failed to create user'], 500);
     }
 }
+
     // Login - إرسال OTP
     public function login(Request $request)
     {
@@ -221,6 +231,25 @@ public function completeProfile(Request $request)
             'user' => $user
         ]);
     }
+    // public function login(Request $request)
+    // {
+    //     $request->validate(['phone' => 'required|digits:9']);
+
+    //     $phone = '+963'.$request->phone;
+    //     $user = User::where('phone', $phone)->first();
+
+    //     if (!$user) return response()->json(['message'=>'User not found'], 404);
+    //     if (!$user->is_approved) return response()->json(['message'=>'Account not approved by admin'], 403);
+
+    //     $token = $user->createToken('auth_token')->plainTextToken;
+
+    //     return response()->json([
+    //         'message' => 'Login successful',
+    //         'access_token' => $token,
+    //         'token_type' => 'Bearer',
+    //         'user' => $user
+    //     ]);
+    // }
    
     // Logout
     public function logout(Request $request)

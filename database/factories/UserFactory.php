@@ -18,7 +18,7 @@ class UserFactory extends Factory
         return [
             'first_name' => $first_name,
             'last_name'  => $last_name,
-            'phone'      => '+963 9' . $this->faker->unique()->numerify('########'),
+            'phone'      => '+9639' . $this->faker->unique()->numerify('########'),
             'role'       => $this->faker->randomElement(['owner', 'renter']),
             'profile_image' => 'uploads/profile_images/dummy_profile.png',
             'id_image' => 'uploads/id_images/dummy_id.png',

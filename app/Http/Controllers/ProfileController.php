@@ -6,12 +6,17 @@ use App\Models\Profile;
 use App\Http\Requests\StoreProfileRequest;
 use App\Http\Requests\UpdateProfileRequest;
 use App\Models\User;
+use Illuminate\Http\Request;
 
 class ProfileController extends Controller
 {
     
-    public function show($id)
+    public function show(Request $request)
     {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+        $id = $request->input('user_id');
         $profile = Profile::where('user_id', $id)->firstOrFail();
         $owner = User::find($profile->user_id);
         $profile->avatar=$owner->profile_image;
