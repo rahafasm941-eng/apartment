@@ -175,7 +175,7 @@ public function updateBooking(Request $request)
         // ✅ الآن lock الـ booking الموجود
         $booking->lockForUpdate()->get(); // أو Booking::lockForUpdate()->find($booking->id);
 
-        if ($booking->status != 'pending') {
+        if ($booking->status != 'pending' && $booking->status != 'approved') {
             DB::rollBack();
             return response()->json(['message' => 'لا يمكن تعديل هذا الحجز'], 400);
         }
@@ -213,7 +213,7 @@ public function updateBooking(Request $request)
             'start_date' => $start_new,
             'end_date' => $end_new,
             'total_price' => $total_price,
-            'status' => 'pending',
+            'status' => 'updated',
         ]);
     
 
@@ -227,7 +227,7 @@ public function updateBooking(Request $request)
     } catch (Exception $e) {
         DB::rollBack();
         Log::error('Booking update failed: ' . $e->getMessage());
-        return response()->json(['message' => 'حدث خطأ أثناء التحديث'], 500);
+        return response()->json(['message' => $e->getMessage()], 500);
     }
 }
 public function approveBookingUpdate(Request $request)
@@ -249,11 +249,11 @@ public function approveBookingUpdate(Request $request)
             return response()->json(['message' => 'الحجز غير موجود'], 404);
         }
         
-        if ($booking->status != 'pending') {
+        if ($booking->status != 'updated') {
             return response()->json(['message' => 'لا يمكن الموافقة على هذا التحديث'], 400);
         }
         
-        if ($booking->apartment->owner_id != $owner_id) {
+        if ($booking->apartment->user_id != $owner_id) {
             return response()->json(['message' => 'غير مصرح لك بالموافقة على هذا التحديث'], 403);
         }
         
@@ -285,11 +285,11 @@ public function approveBookingUpdate(Request $request)
             return response()->json(['message' => 'الحجز غير موجود'], 404);
         }
         
-        if ($booking->status != 'pending') {
+        if ($booking->status != 'updated') {
             return response()->json(['message' => 'لا يمكن رفض هذا التحديث'], 400);
         }
         
-        if ($booking->apartment->owner_id != $owner_id) {
+        if ($booking->apartment->user_id != $owner_id) {
             return response()->json(['message' => 'غير مصرح لك برفض هذا التحديث'], 403);
         }
         
@@ -376,7 +376,7 @@ public function approveBookingUpdate(Request $request)
             return response()->json(['message' => 'لا يمكن الموافقة على هذا الحجز'], 400);
         }
         
-        if ($booking->apartment->owner_id != $owner_id) {
+        if ($booking->apartment->user_id != $owner_id) {
             return response()->json(['message' => 'غير مصرح لك بالموافقة على هذا الحجز'], 403);
         }
         
@@ -435,7 +435,7 @@ public function approveBookingUpdate(Request $request)
             return response()->json(['message' => 'لا يمكن رفض هذا الحجز'], 400);
         }
         
-        if ($booking->apartment->owner_id != $owner_id) {
+        if ($booking->apartment->user_id != $owner_id) {
             return response()->json(['message' => 'غير مصرح لك برفض هذا الحجز'], 403);
         }
         
@@ -447,5 +447,28 @@ public function approveBookingUpdate(Request $request)
             'booking_status' => $booking->status
         ], 200);
     }
-
+    public function OwnerUpdatedBooking(){
+        $owner=Auth::user();
+        $owner_id=$owner->id;
+        if($owner->role !='owner'){
+            return response()->json(['message' => 'غير مصرح لك بالوصول إلى هذه البيانات'], 403);
+        }
+        $apartments = Apartment::where('user_id', $owner_id)->pluck('id');
+        $bookings = Booking::with('apartment','user')
+            ->whereIn('apartment_id', $apartments)
+            ->where('status','updated')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return response()->json([
+            'updated_bookings' => $bookings,
+            'renter_info' => $bookings->map(function($booking) {
+                return [
+                    'first_name' => $booking->user->first_name,
+                    'last_name' => $booking->user->last_name,
+                    'phone' => $booking->user->phone,
+                    'booking_id' => $booking->id,
+                ];
+            })
+        ], 200);
+    }
 }

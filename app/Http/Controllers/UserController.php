@@ -184,23 +184,23 @@ public function completeProfile(Request $request)
 }
 
     // Login - إرسال OTP
-    public function login(Request $request)
-    {
-        $request->validate(['phone' => 'required|digits:9']);
+    // public function login(Request $request)
+    // {
+    //     $request->validate(['phone' => 'required|digits:9']);
 
-        $phone = '+963'.$request->phone;
-        $user = User::where('phone', $phone)->first();
+    //     $phone = '+963'.$request->phone;
+    //     $user = User::where('phone', $phone)->first();
 
-        if (!$user) return response()->json(['message'=>'User not found'], 404);
-        if (!$user->is_approved) return response()->json(['message'=>'Account not approved by admin'], 403);
+    //     if (!$user) return response()->json(['message'=>'User not found'], 404);
+    //     if (!$user->is_approved) return response()->json(['message'=>'Account not approved by admin'], 403);
 
-        $otp = rand(100000, 999999);
-        Cache::put('otp_'.$user->phone, $otp, now()->addMinutes(5));
+    //     $otp = rand(100000, 999999);
+    //     Cache::put('otp_'.$user->phone, $otp, now()->addMinutes(5));
 
-        $this->sendUltraMsgOtp($user->phone, $otp);
+    //     $this->sendUltraMsgOtp($user->phone, $otp);
 
-        return response()->json(['message'=>'OTP sent via WhatsApp']);
-    }
+    //     return response()->json(['message'=>'OTP sent via WhatsApp']);
+    // }
 
     // Verify OTP Login
     public function verifyLoginOtp(Request $request)
@@ -231,25 +231,25 @@ public function completeProfile(Request $request)
             'user' => $user
         ]);
     }
-    // public function login(Request $request)
-    // {
-    //     $request->validate(['phone' => 'required|digits:9']);
+    public function login(Request $request)
+    {
+        $request->validate(['phone' => 'required|digits:9']);
 
-    //     $phone = '+963'.$request->phone;
-    //     $user = User::where('phone', $phone)->first();
+        $phone = '+963'.$request->phone;
+        $user = User::where('phone', $phone)->first();
 
-    //     if (!$user) return response()->json(['message'=>'User not found'], 404);
-    //     if (!$user->is_approved) return response()->json(['message'=>'Account not approved by admin'], 403);
+        if (!$user) return response()->json(['message'=>'User not found'], 404);
+        if (!$user->is_approved) return response()->json(['message'=>'Account not approved by admin'], 403);
 
-    //     $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('auth_token')->plainTextToken;
 
-    //     return response()->json([
-    //         'message' => 'Login successful',
-    //         'access_token' => $token,
-    //         'token_type' => 'Bearer',
-    //         'user' => $user
-    //     ]);
-    // }
+        return response()->json([
+            'message' => 'Login successful',
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $user
+        ]);
+    }
    
     // Logout
     public function logout(Request $request)

@@ -34,6 +34,7 @@ return new class extends Migration
             'approved',  // تمت الموافقة
             'rejected',  // تم الرفض
             'canceled',  // ألغاها المستأجر
+            'updated'    // تم تعديل الحجز بانتظار موافقة صاحب الشقة
         ])->default('pending');
 
         // Optional

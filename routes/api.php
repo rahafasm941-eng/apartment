@@ -32,6 +32,7 @@ Route::post('update-booking',[BookingController::class,'updateBooking']);
 Route::post('bookingApproveUpdate',[BookingController::class,'approveBookingUpdate']);
 Route::get('pending-booking',[BookingController::class,'pendingBookings']);
 Route::post('reject-booking',[BookingController::class,'rejectBooking']);
+Route::post('owner/reject-booking-update',[BookingController::class,'rejectBookingUpdate']);
 });
 // ________________________________________________
 
