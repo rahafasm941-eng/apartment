@@ -266,6 +266,41 @@ public function approveBookingUpdate(Request $request)
         ], 200);
         
     }
+    public function rejectBookingUpdate(Request $request)
+    {
+        $user = Auth::user();
+        $owner_id = $user->id;
+        
+        if ($user->role != 'owner') {
+            return response()->json(['message' => 'غير مصرح لك برفض هذا التحديث'], 403);
+        }   
+        
+        $request->validate([
+            'id' => 'required|exists:bookings,id'
+        ]);
+        
+        $booking = Booking::find($request->id);
+        
+        if (!$booking) {
+            return response()->json(['message' => 'الحجز غير موجود'], 404);
+        }
+        
+        if ($booking->status != 'pending') {
+            return response()->json(['message' => 'لا يمكن رفض هذا التحديث'], 400);
+        }
+        
+        if ($booking->apartment->owner_id != $owner_id) {
+            return response()->json(['message' => 'غير مصرح لك برفض هذا التحديث'], 403);
+        }
+        
+        $booking->status = 'rejected';
+        $booking->save();
+        
+        return response()->json([
+            'message' => 'تم رفض تحديث الحجز بنجاح',
+            'booking_status' => $booking->status
+        ], 200);
+    }
 
 
     public function userBookings(Request $request)
@@ -306,7 +341,15 @@ public function approveBookingUpdate(Request $request)
             ->get();
             
         return response()->json([
-            'owner_bookings' => $bookings
+            'owner_bookings' => $bookings,
+            'renter_info' => $bookings->map(function($booking) {
+                return [
+                    'first_name' => $booking->user->first_name,
+                    'last_name' => $booking->user->last_name,
+                    'phone' => $booking->user->phone,
+                    'booking_id' => $booking->id,
+                ];
+            })
         ], 200);
     }
 
@@ -358,8 +401,51 @@ public function approveBookingUpdate(Request $request)
             ->orderBy('created_at', 'desc')
             ->get();
             return response()->json([
-                'pending_bookings' => $bookings
+                'pending_bookings' => $bookings,
+                'renter_info' => $bookings->map(function($booking) {
+                    return [
+                        'first_name' => $booking->user->first_name,
+                        'last_name' => $booking->user->last_name,
+                        'phone' => $booking->user->phone,
+                        'booking_id' => $booking->id,
+                    ];
+                })
             ], 200);
+    }
+    public function rejectBooking(Request $request)
+    {
+        $user = Auth::user();
+        $owner_id = $user->id;
+        
+        if ($user->role != 'owner') {
+            return response()->json(['message' => 'غير مصرح لك برفض هذا الحجز'], 403);
+        }   
+        
+        $request->validate([
+            'id' => 'required|exists:bookings,id'
+        ]);
+        
+        $booking = Booking::find($request->id);
+        
+        if (!$booking) {
+            return response()->json(['message' => 'الحجز غير موجود'], 404);
+        }
+        
+        if ($booking->status != 'pending') {
+            return response()->json(['message' => 'لا يمكن رفض هذا الحجز'], 400);
+        }
+        
+        if ($booking->apartment->owner_id != $owner_id) {
+            return response()->json(['message' => 'غير مصرح لك برفض هذا الحجز'], 403);
+        }
+        
+        $booking->status = 'rejected';
+        $booking->save();
+        
+        return response()->json([
+            'message' => 'تم رفض الحجز بنجاح',
+            'booking_status' => $booking->status
+        ], 200);
     }
 
 }

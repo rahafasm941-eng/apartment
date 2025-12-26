@@ -31,6 +31,7 @@ return new class extends Migration
         $table->integer('number_of_rooms')->default(1);
         $table->integer('bathrooms')->default(1);
         $table->boolean('is_available')->default(true);
+        $table->integer('rating')->default(0);
 
         // Media
         $table->string( 'apartment_image');

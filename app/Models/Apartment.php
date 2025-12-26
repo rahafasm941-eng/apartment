@@ -41,5 +41,9 @@ public function bookings() {
 public function reviews() {
     return $this->hasMany(Review::class);
 }
-
+public function calculateRating() {
+    $averageRating = $this->reviews()->avg('rating');
+    $this->rating = $averageRating ?? 0;
+    $this->save();
+}
 }

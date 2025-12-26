@@ -17,11 +17,6 @@ class ApartmentController extends Controller
     return response()->json($apartments, 200);
 }
 
-    public function show(Apartment $apartment)
-    {
-        return response()->json($apartment, 200);
-    }
-
     public function store(CreateApartmentRequest $request)
     {
         $user = Auth::user();
