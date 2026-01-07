@@ -319,9 +319,9 @@ public function approveBookingUpdate(Request $request)
             'canceled' => $bookings->where('status', 'canceled'),
         ];
 
-        return response()->json([
-            'all_bookings' => $bookings,
+        return response()->json([  
             'user_info' => $user_info,
+            'all_bookings' => $bookings,
             'categorized' => $summary
         ], 200);
     }
@@ -386,6 +386,7 @@ public function approveBookingUpdate(Request $request)
         return response()->json([
             'message' => 'تمت الموافقة على الحجز بنجاح',
             'booking_status' => $booking->status
+            
         ], 200);
     }
     public function pendingBookings(){

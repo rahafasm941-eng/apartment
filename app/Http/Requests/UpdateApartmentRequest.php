@@ -11,7 +11,7 @@ class UpdateApartmentRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,7 @@ class UpdateApartmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            
+            'id'=>'required|integer|exists:apartments,id',
             'address' => 'sometimes|required|string|max:255',
             'city' => 'sometimes|required|string|max:100',
             'neighborhood' => 'sometimes|required|string|max:100',

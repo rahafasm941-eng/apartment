@@ -19,7 +19,7 @@ class ApartmentFactory extends Factory
         return [
             'city' => $this->faker->randomElement($syrianCities),
           'address' => $this->faker->randomElement($address),
-
+            'rating' => $this->faker->randomFloat(1, 1, 5),
             'neighborhood' => $this->faker->address(),
 
             'latitude' => $this->faker->latitude(-90, 90),

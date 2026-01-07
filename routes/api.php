@@ -4,6 +4,7 @@ use App\Http\Controllers\ApartmentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,9 +16,13 @@ Route::get('/user', function (Request $request) {
 // ______________هدول تبعات الشقةا _______________
 Route::middleware('auth:sanctum')->group(function () {
 Route::post('apartments', [ApartmentController::class, 'store']);
-Route::put('apartments', [ApartmentController::class, 'edit']);
+Route::put('apartments', [ApartmentController::class, 'update']);
 Route::delete('apartments', [ApartmentController::class, 'destroy']);
 Route::get('OwnerApartments', [ApartmentController::class, 'OwnerApartments']);
+Route::get('countOwnerApartments', [ApartmentController::class, 'countOwnerApartments']);
+Route::get('countBookedApartments', [ApartmentController::class, 'countBookedApartments']);
+Route::get('countPendingApartments', [ApartmentController::class, 'countPendingApartments']);
+Route::get('countAvailableApartments', [ApartmentController::class, 'countAvailableApartments']);
 });
 // ________________________________________________
 
@@ -25,7 +30,7 @@ Route::get('OwnerApartments', [ApartmentController::class, 'OwnerApartments']);
 Route::middleware('auth:sanctum')->group(function () {
 Route::post('/bookings', [BookingController::class, 'store']);
 Route::post('/bookings/cancel', [BookingController::class, 'cancel']);
-Route::get('owner/bookings',[BookingController::class,'ownerBookings']);
+Route::get('owner/bookings',[BookingController::class,'OwnerBookings']);
 Route::post('approve-booking',[BookingController::class,'approveBooking']);
 Route::get('user/booking',[BookingController::class,'userBookings']);
 Route::post('update-booking',[BookingController::class,'updateBooking']);
@@ -33,6 +38,7 @@ Route::post('bookingApproveUpdate',[BookingController::class,'approveBookingUpda
 Route::get('pending-booking',[BookingController::class,'pendingBookings']);
 Route::post('reject-booking',[BookingController::class,'rejectBooking']);
 Route::post('owner/reject-booking-update',[BookingController::class,'rejectBookingUpdate']);
+Route::get('OwnerUpdatedBooking',[BookingController::class,'OwnerUpdatedBooking']);
 });
 // ________________________________________________
 
@@ -56,6 +62,13 @@ Route::post('/admin/reject-user', [AdminController::class, 'rejectUser']);
 Route::get('/admin/all-users', [AdminController::class, 'allUsers']);
 Route::get('/admin/all-apartments', [AdminController::class, 'allApartments']);
 Route::delete('/admin/delete-apartment', [AdminController::class, 'deleteApartment']);
+Route::get('countPendingUsers',[AdminController::class,'countPendingUsers']);
+Route::get('countBookedApartments',[AdminController::class,'countBookedApartments']);
+Route::get('countBookingUsers',[AdminController::class,'countBookingUsers']);
+Route::get('countAllApartments',[AdminController::class,'countAllApartments']);
+Route::post('approveApartment',[AdminController::class,'approveApartment']);
+Route::get('pendingApartments',[AdminController::class,'pendingApartments']);
+
 });
 //_______________________________________________________________
 
@@ -79,5 +92,10 @@ Route::get('allApartments',[ApartmentController::class,'index']);
 Route::get('user/profile',[UserController::class,'getProfile']);
 //_________________________________________
 
+// ___________هي تبع التقييمات ___________________
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('reviews', [ReviewController::class, 'store']);
+});
+// _____________________________________________
 
         
