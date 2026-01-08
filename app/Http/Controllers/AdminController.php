@@ -106,16 +106,50 @@ class AdminController extends Controller
         return response()->json(['total_apartments_count' => $count]);
     }
     public function approveApartment(Request $request)
-    {
-        $request->validate([
-            'pending_apartment_id'=>'required|exists:pending_apartments,id'
-        ]);
-         $pending_apartment = PendingApartment::findOrFail($request->pending_apartment_id);
-         
-        $apartment=Apartment::create($pending_apartment->toArray());
-        $pending_apartment->delete();
-        return response()->json(['apartment created'=>$apartment]);
+{
+    try{
+    $request->validate([
+        'pending_apartment_id' => 'required|exists:pending_apartments,id'
+    ]);
+
+    $pending = PendingApartment::findOrFail($request->pending_apartment_id);
+
+    // ❗ خذ البيانات بدون user_id
+    $data = collect($pending->getAttributes())->except([
+    'id',
+    'apartment_id',
+    'status',
+    'created_at',
+    'updated_at'
+])->toArray();
+
+$data['user_id'] = $pending->user_id; // هنا نضمن أنه ينتقل
+
+$apartment = Apartment::create($data);
+
+    if ($pending->apartment_id) {
+        // تحديث شقة موجودة
+        $apartment = Apartment::findOrFail($pending->apartment_id);
+        $apartment->update($data);
+    } else {
+        // الإنشاء مع فرض user_id صراحة
+        $apartment = new Apartment($data);
+        $apartment->user_id = $pending->user_id;
+        $apartment->save();
     }
+
+    $pending->delete();
+
+    return response()->json([
+        'message' => 'Apartment approved successfully',
+        'apartment' => $apartment
+    ]);}
+    catch(\Exception $e){
+        return response()->json(['error'=>$e->getMessage()],500);
+    }
+}
+
+
     public function pendingApartments(){
         $pending_apartments=PendingApartment::get();
         return response()->json(['pending apartments'=>$pending_apartments],200);

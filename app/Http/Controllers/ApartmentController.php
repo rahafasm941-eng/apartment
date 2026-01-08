@@ -18,72 +18,116 @@ class ApartmentController extends Controller
     return response()->json($apartments, 200);
 }
 
-    public function store(CreateApartmentRequest $request)
-    {
-        $user = Auth::user();
-        $user_id = $user->id;
-        $validatedData = $request->validated();
-        $validatedData['apartment_image'] = $validatedData['apartment_image'] ?? 'Unknown';
-        
-        $validatedData['user_id'] = $user_id;
-        
-        if ($user->role == 'owner') {
-            $apartment = PendingApartment::create($validatedData);
-            return response()->json($apartment, 201);
-        }
+ public function store(CreateApartmentRequest $request)
+{
+    $user = Auth::user();
 
+    if ($user->role !== 'owner') {
         return response()->json(['message' => 'Only owners can create apartments'], 403);
     }
 
+    $validatedData = $request->validated();
+
+    //  remove files from validated array
+    unset($validatedData['apartment_image'], $validatedData['details_image']);
+
+    // Store main apartment image
+    if ($request->hasFile('apartment_image')) {
+        $validatedData['apartment_image'] =
+            $request->file('apartment_image')->store('apartment_images', 'public');
+    }
+
+    // Store details images
+    if ($request->hasFile('details_image')) {
+        $images = [];
+        foreach ($request->file('details_image') as $image) {
+            $images[] = $image->store('details_images', 'public');
+        }
+        $validatedData['details_image'] = $images;
+    }
+
+    $validatedData['user_id'] = $user->id;
+
+    $pendingApartment = PendingApartment::create($validatedData);
+
+    return response()->json($pendingApartment, 201);
+}
+
+
+
     public function update(Request $request)
-    {
-        $user = Auth::user();
-         if ($user->role !== 'owner') {
+{
+    $user = Auth::user();
+
+    if ($user->role !== 'owner') {
         return response()->json(['message' => 'Unauthorized'], 403);
     }
-    $validated=$request->validate([
-            'id'=>'required|integer|exists:apartments,id',
-            'address' => 'sometimes|required|string|max:255',
-            'city' => 'sometimes|required|string|max:100',
-            'neighborhood' => 'sometimes|required|string|max:100',
-            'latitude' => 'sometimes|required|numeric|between:-90,90',
-            'longitude' => 'sometimes|required|numeric|between:-180,180',
-            'bathrooms' => 'sometimes|required|integer|min:1',
-            'number_of_rooms' => 'sometimes|required|integer|min:1',
-            'price_per_month' => 'sometimes|required|numeric|min:0',
-            'type'=>'sometimes|required|string',
-            'is_available' => 'sometimes|required|boolean',
-            'apartment_image' => 'sometimes|required|image|mimes:png,jpg,jpeg|max:2048',
-            'description' => 'nullable|string',
-            'area' => 'sometimes|required|integer|min:1',
-            'details_image' => 'sometimes|required',
-            'details_image.*' => 'image|mimes:png,jpg,jpeg|max:2048',
-            'features' => 'nullable|array',]);
-        $apartment = Apartment::find($request->id);
-        if (!$apartment) {
-        return response()->json(['message' => 'Apartment not found'], 404);
-    }
+
+    $validated = $request->validate([
+        'id' => 'required|exists:apartments,id',
+        'address' => 'sometimes|required|string|max:255',
+        'city' => 'sometimes|required|string|max:100',
+        'neighborhood' => 'sometimes|required|string|max:100',
+        'latitude' => 'sometimes|required|numeric|between:-90,90',
+        'longitude' => 'sometimes|required|numeric|between:-180,180',
+        'bathrooms' => 'sometimes|integer|min:1',
+        'number_of_rooms' => 'sometimes|integer|min:1',
+        'price_per_month' => 'sometimes|numeric|min:0',
+        'type' => 'sometimes|string',
+        'is_available' => 'sometimes|boolean',
+        'apartment_image' => 'sometimes|image|mimes:png,jpg,jpeg|max:2048',
+        'details_image' => 'sometimes|array',
+        'details_image.*' => 'image|mimes:png,jpg,jpeg|max:2048',
+        'description' => 'nullable|string',
+        'area' => 'sometimes|integer|min:1',
+        'features' => 'nullable|array',
+    ]);
+
+    $apartment = Apartment::findOrFail($validated['id']);
+
     if ($apartment->user_id !== $user->id) {
         return response()->json(['message' => 'You do not own this apartment'], 403);
     }
-    if ($request->hasFile('details_image')) {
-    $files = $request->file('details_image');
-    $files = is_array($files) ? $files : [$files];
 
-    foreach ($files as $image) {
-        $images[] = $image->store('details_images', 'public');
+    unset(
+        $validated['id'],
+        $validated['apartment_image'],
+        $validated['details_image']
+    );
+
+    /** Store apartment image */
+    if ($request->hasFile('apartment_image')) {
+        $validated['apartment_image'] =
+            $request->file('apartment_image')->store('apartment_images', 'public');
     }
 
-    $validated['details_image'] = $images;
+    /** Store details images */
+    if ($request->hasFile('details_image')) {
+        $images = [];
+        foreach ($request->file('details_image') as $image) {
+            $images[] = $image->store('details_images', 'public');
+        }
+
+        $validated['details_image'] = $images;
+
+       
+    }
+
+    /** Create pending update */
+    $pendingApartment = PendingApartment::create([
+        ...$validated,
+        'apartment_id' => $apartment->id,
+        'user_id' => $user->id,
+        'status' => 'pending',
+    ]);
+
+    return response()->json([
+        'message' => 'Update request sent. Waiting for admin approval.',
+        'pending_apartment' => $pendingApartment
+    ], 200);
 }
 
-        $apartment->update(($validated));
-        $pending_apartment=PendingApartment::create($apartment->toArray());
-        $apartment->delete();
-        return response()->json(['massage'=>'wait until thre admin aprroves',
-        'pending apartment'=>$pending_apartment
-    ], 200);
-    }
+
 
     public function destroy(Request $request)
 {

@@ -16,30 +16,30 @@ return new class extends Migration
             $table->timestamps();
             
         // Basic info
-        $table->string('address');
-        $table->string('city');
-        $table->string('neighborhood');
+        $table->string('address')->default('economic');
+        $table->string('city')->default('damascus');
+        $table->string('neighborhood')->default('al-midan');
         $table->text('description')->nullable();
         $table->string('type')->default('economic');
 
         // Pricing
-        $table->decimal('price_per_month', 8, 2);
+        $table->decimal('price_per_month', 8, 2)->default(0);
 
         // Specifications
-        $table->integer('area');
+        $table->integer('area')->default(0) ;
         $table->integer('number_of_rooms')->default(1);
         $table->integer('bathrooms')->default(1);
         $table->boolean('is_available')->default(true);
         $table->integer('rating')->default(0);
 
         // Media
-        $table->string( 'apartment_image');
-        $table->json( 'details_image');
+        $table->string( 'apartment_image')->default('');
+        $table->json( 'details_image')->default('[]');
 
 
         // Location
-        $table->double('latitude', 10, 8);
-        $table->double('longitude', 11, 8);
+        $table->double('latitude', 10, 8)->default(0);
+        $table->double('longitude', 11, 8)->default(0);
 
         // Extra features
         $table->json('features')->nullable();
