@@ -26,7 +26,7 @@ class ApartmentController extends Controller
         $validatedData['apartment_image'] = $validatedData['apartment_image'] ?? 'Unknown';
         
         $validatedData['user_id'] = $user_id;
-
+        
         if ($user->role == 'owner') {
             $apartment = PendingApartment::create($validatedData);
             return response()->json($apartment, 201);
@@ -41,16 +41,8 @@ class ApartmentController extends Controller
          if ($user->role !== 'owner') {
         return response()->json(['message' => 'Unauthorized'], 403);
     }
-    $request->validate([
-        'id'=>'required|integer|exists:apartments,id',]);
-        $apartment = Apartment::find($request->id);
-        if (!$apartment) {
-        return response()->json(['message' => 'Apartment not found'], 404);
-    }
-    if ($apartment->user_id !== $user->id) {
-        return response()->json(['message' => 'You do not own this apartment'], 403);
-    }
-        $apartment->update($request->validate([
+    $validated=$request->validate([
+            'id'=>'required|integer|exists:apartments,id',
             'address' => 'sometimes|required|string|max:255',
             'city' => 'sometimes|required|string|max:100',
             'neighborhood' => 'sometimes|required|string|max:100',
@@ -64,9 +56,28 @@ class ApartmentController extends Controller
             'apartment_image' => 'sometimes|required|image|mimes:png,jpg,jpeg|max:2048',
             'description' => 'nullable|string',
             'area' => 'sometimes|required|integer|min:1',
-            'details_image' => 'sometimes|required|array',
+            'details_image' => 'sometimes|required',
             'details_image.*' => 'image|mimes:png,jpg,jpeg|max:2048',
-            'features' => 'nullable|array',]));
+            'features' => 'nullable|array',]);
+        $apartment = Apartment::find($request->id);
+        if (!$apartment) {
+        return response()->json(['message' => 'Apartment not found'], 404);
+    }
+    if ($apartment->user_id !== $user->id) {
+        return response()->json(['message' => 'You do not own this apartment'], 403);
+    }
+    if ($request->hasFile('details_image')) {
+    $files = $request->file('details_image');
+    $files = is_array($files) ? $files : [$files];
+
+    foreach ($files as $image) {
+        $images[] = $image->store('details_images', 'public');
+    }
+
+    $validated['details_image'] = $images;
+}
+
+        $apartment->update(($validated));
         $pending_apartment=PendingApartment::create($apartment->toArray());
         $apartment->delete();
         return response()->json(['massage'=>'wait until thre admin aprroves',
@@ -253,6 +264,27 @@ class ApartmentController extends Controller
     $count = Apartment::where('user_id', $user->id)
         ->whereDoesntHave('bookings', function ($query) {
             $query->whereIn('status', ['pending', 'updated', 'approved'])
+                  ->where('end_date', '>=', now());
+        })
+        ->count();
+
+    return response()->json([
+        'available_apartment_count' => $count
+    ], 200);
+}
+ public function AvailableApartments()
+{
+    $user = Auth::user();
+
+    if ($user->role !== 'owner') {
+        return response()->json([
+            'message' => 'Only owners can view their available apartment count'
+        ], 403);
+    }
+
+    $count = Apartment::where('user_id', $user->id)
+        ->whereDoesntHave('bookings', function ($query) {
+            $query->whereIn('status',  ['pending', 'updated', 'approved'])
                   ->where('end_date', '>=', now());
         })
         ->count();

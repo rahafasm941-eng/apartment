@@ -131,7 +131,9 @@ class BookingController extends Controller
         }
 
         $booking->update(['status' => 'canceled']);
-
+        $apartment= Apartment::find($booking->apartment_id);
+        $apartment->is_available=true;
+        $apartment->save();
         return response()->json([
             'message' => 'تم إلغاء الحجز بنجاح',
             'booking_id' => $id,
@@ -259,6 +261,9 @@ public function approveBookingUpdate(Request $request)
         
         $booking->status = 'approved';
         $booking->save();
+        $apartment= Apartment::find($booking->apartment_id);
+        $apartment->is_available=false;
+        $apartment->save();
         
         return response()->json([
             'message' => 'تمت الموافقة على تحديث الحجز بنجاح',
@@ -382,6 +387,11 @@ public function approveBookingUpdate(Request $request)
         
         $booking->status = 'approved';
         $booking->save();
+        $apartment= Apartment::find($booking->apartment_id);
+        $apartment->is_available=false;
+        $apartment->save();
+
+
         
         return response()->json([
             'message' => 'تمت الموافقة على الحجز بنجاح',
@@ -442,6 +452,9 @@ public function approveBookingUpdate(Request $request)
         
         $booking->status = 'rejected';
         $booking->save();
+        $apartment= Apartment::find($booking->apartment_id);
+        $apartment->is_available=true;
+        $apartment->save();
         
         return response()->json([
             'message' => 'تم رفض الحجز بنجاح',

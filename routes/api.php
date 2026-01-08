@@ -16,7 +16,7 @@ Route::get('/user', function (Request $request) {
 // ______________هدول تبعات الشقةا _______________
 Route::middleware('auth:sanctum')->group(function () {
 Route::post('apartments', [ApartmentController::class, 'store']);
-Route::put('apartments', [ApartmentController::class, 'update']);
+Route::post('apartments', [ApartmentController::class, 'update']);
 Route::delete('apartments', [ApartmentController::class, 'destroy']);
 Route::get('OwnerApartments', [ApartmentController::class, 'OwnerApartments']);
 Route::get('countOwnerApartments', [ApartmentController::class, 'countOwnerApartments']);

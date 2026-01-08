@@ -111,6 +111,7 @@ class AdminController extends Controller
             'pending_apartment_id'=>'required|exists:pending_apartments,id'
         ]);
          $pending_apartment = PendingApartment::findOrFail($request->pending_apartment_id);
+         
         $apartment=Apartment::create($pending_apartment->toArray());
         $pending_apartment->delete();
         return response()->json(['apartment created'=>$apartment]);
