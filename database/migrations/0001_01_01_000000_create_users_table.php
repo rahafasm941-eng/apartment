@@ -24,6 +24,7 @@ return new class extends Migration
         $table->boolean('is_approved')->default(false); // موافقة الأدمن
         $table->rememberToken();
         $table->timestamps();
+         $table->string('fcm_token')->nullable();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

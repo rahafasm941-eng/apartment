@@ -222,11 +222,16 @@ public function completeProfile(Request $request)
         Cache::forget('otp_'.$user->phone);
 
         $token = $user->createToken('auth_token')->plainTextToken;
+        if($user->role=='renter'){
+            $user->fcm_token=random_int(4000,100000);
+        }
+            $user->save();
 
         return response()->json([
             'message' => 'Login successful',
             'access_token' => $token,
             'token_type' => 'Bearer',
+            'fcm_token'=>$user->fcm_token,
             'user' => $user
         ]);
     }
@@ -241,6 +246,10 @@ public function completeProfile(Request $request)
         if (!$user->is_approved) return response()->json(['message'=>'Account not approved by admin'], 403);
 
         $token = $user->createToken('auth_token')->plainTextToken;
+ if($user->role=='renter'){
+            $user->fcm_token=random_int(4000,100000);
+        }
+            $user->save();
 
         return response()->json([
             'message' => 'Login successful',

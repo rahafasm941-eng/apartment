@@ -27,8 +27,8 @@ class BookingController extends Controller
         
         $request->validate([
             'apartment_id' => 'required|exists:apartments,id',
-            'start_date'   => 'required|date_format:d-m-Y',
-            'end_date'     => 'required|date_format:d-m-Y|after_or_equal:start_date',
+            'start_date'   => 'required|date_format:d-m-Y|after:now',
+            'end_date'     => 'required|date_format:d-m-Y|after_or_equal:start_date|after:now',
         ]);
 
         try {
@@ -157,8 +157,8 @@ public function updateBooking(Request $request)
     
     $request->validate([
         'booking_id' => 'required|exists:bookings,id',
-        'start_date' => 'sometimes|required|date_format:d-m-Y',
-        'end_date' => 'sometimes|required|date_format:d-m-Y|after_or_equal:start_date',
+        'start_date' => 'sometimes|required|date_format:d-m-Y|after:now',
+        'end_date' => 'sometimes|required|date_format:d-m-Y|after_or_equal:start_date|after:now',
     ]);
 
     try {
@@ -396,8 +396,9 @@ public function approveBookingUpdate(Request $request)
         return response()->json([
             'message' => 'تمت الموافقة على الحجز بنجاح',
             'booking_status' => $booking->status,
-            'renter_token'=>$booking->user->device_token,
-            
+            'fcm_token_renter'=>$booking->user->fcm_token ,
+            'renter_id'=>$booking->user->id,
+           
         ], 200);
     }
     public function pendingBookings(){
@@ -459,7 +460,10 @@ public function approveBookingUpdate(Request $request)
         
         return response()->json([
             'message' => 'تم رفض الحجز بنجاح',
-            'booking_status' => $booking->status
+            'booking_status' => $booking->status,
+            'renter_id'=>$booking->user->id,
+            'fcm_token_renter'=>$booking->user->fcm_token
+
         ], 200);
     }
     public function OwnerUpdatedBooking(){
@@ -482,6 +486,7 @@ public function approveBookingUpdate(Request $request)
                     'last_name' => $booking->user->last_name,
                     'phone' => $booking->user->phone,
                     'booking_id' => $booking->id,
+                    
                 ];
             })
         ], 200);
