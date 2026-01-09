@@ -25,6 +25,7 @@ class PendingApartment extends Model
         'apartment_image',
         'latitude',
         'longitude',
+        'apartment_id',
         'features',
         'user_id',
         'details_image'

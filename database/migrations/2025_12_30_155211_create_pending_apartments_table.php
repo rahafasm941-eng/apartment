@@ -16,6 +16,7 @@ return new class extends Migration
             $table->timestamps();
             
         // Basic info
+        $table->integer('apartment_id')->nullable();
         $table->string('address')->default('economic');
         $table->string('city')->default('damascus');
         $table->string('neighborhood')->default('al-midan');

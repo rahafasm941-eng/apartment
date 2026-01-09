@@ -47,7 +47,6 @@ class ApartmentController extends Controller
     }
 
     $validatedData['user_id'] = $user->id;
-
     $pendingApartment = PendingApartment::create($validatedData);
 
     return response()->json($pendingApartment, 201);
@@ -63,25 +62,24 @@ class ApartmentController extends Controller
         return response()->json(['message' => 'Unauthorized'], 403);
     }
 
-    $validated = $request->validate([
-        'id' => 'required|exists:apartments,id',
-        'address' => 'sometimes|required|string|max:255',
-        'city' => 'sometimes|required|string|max:100',
-        'neighborhood' => 'sometimes|required|string|max:100',
-        'latitude' => 'sometimes|required|numeric|between:-90,90',
-        'longitude' => 'sometimes|required|numeric|between:-180,180',
-        'bathrooms' => 'sometimes|integer|min:1',
-        'number_of_rooms' => 'sometimes|integer|min:1',
-        'price_per_month' => 'sometimes|numeric|min:0',
-        'type' => 'sometimes|string',
-        'is_available' => 'sometimes|boolean',
-        'apartment_image' => 'sometimes|image|mimes:png,jpg,jpeg|max:2048',
-        'details_image' => 'sometimes|array',
-        'details_image.*' => 'image|mimes:png,jpg,jpeg|max:2048',
-        'description' => 'nullable|string',
-        'area' => 'sometimes|integer|min:1',
-        'features' => 'nullable|array',
-    ]);
+    $validated=$request->validate([
+            'id'=>'required|integer|exists:apartments,id',
+            'address' => 'sometimes|required|string|max:255',
+            'city' => 'sometimes|required|string|max:100',
+            'neighborhood' => 'sometimes|required|string|max:100',
+            'latitude' => 'sometimes|required|numeric|between:-90,90',
+            'longitude' => 'sometimes|required|numeric|between:-180,180',
+            'bathrooms' => 'sometimes|required|integer|min:1',
+            'number_of_rooms' => 'sometimes|required|integer|min:1',
+            'price_per_month' => 'sometimes|required|numeric|min:0',
+            'type'=>'sometimes|required|string',
+            'is_available' => 'sometimes|required|boolean',
+            'apartment_image' => 'sometimes|required|image|mimes:png,jpg,jpeg|max:2048',
+            'description' => 'nullable|string',
+            'area' => 'sometimes|required|integer|min:1',
+            'details_image' => 'sometimes|required|array',
+            'details_image.*' => 'image|mimes:png,jpg,jpeg|max:2048',
+            'features' => 'nullable|array',]);
 
     $apartment = Apartment::findOrFail($validated['id']);
 
@@ -112,14 +110,28 @@ class ApartmentController extends Controller
 
        
     }
-
+    
     /** Create pending update */
     $pendingApartment = PendingApartment::create([
-        ...$validated,
-        'apartment_id' => $apartment->id,
-        'user_id' => $user->id,
-        'status' => 'pending',
-    ]);
+    'address' => $validated['address'] ?? $apartment->address,
+    'city' => $validated['city'] ?? $apartment->city,
+    'neighborhood' => $validated['neighborhood'] ?? $apartment->neighborhood,
+    'latitude' => $validated['latitude'] ?? $apartment->latitude,
+    'longitude' => $validated['longitude'] ?? $apartment->longitude,
+    'bathrooms' => $validated['bathrooms'] ?? $apartment->bathrooms,
+    'number_of_rooms' => $validated['number_of_rooms'] ?? $apartment->number_of_rooms,
+    'price_per_month' => $validated['price_per_month'] ?? $apartment->price_per_month,
+    'type' => $validated['type'] ?? $apartment->type,
+    'area' => $validated['area'] ?? $apartment->area,
+    'description' => $validated['description'] ?? $apartment->description,
+    'apartment_image' => $validated['apartment_image'] ?? $apartment->apartment_image,
+    'details_image' => $validated['details_image'] ?? $apartment->details_image,
+    'features' => $validated['features'] ?? $apartment->features,
+    'apartment_id' => $apartment->id,
+    'user_id' => $user->id,
+    'status' => 'pending',
+]);
+
 
     return response()->json([
         'message' => 'Update request sent. Waiting for admin approval.',

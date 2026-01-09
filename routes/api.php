@@ -63,7 +63,7 @@ Route::get('/admin/all-users', [AdminController::class, 'allUsers']);
 Route::get('/admin/all-apartments', [AdminController::class, 'allApartments']);
 Route::delete('/admin/delete-apartment', [AdminController::class, 'deleteApartment']);
 Route::get('countPendingUsers',[AdminController::class,'countPendingUsers']);
-Route::get('countBookedApartments',[AdminController::class,'countBookedApartments']);
+Route::get('countBookedAdminApartments',[AdminController::class,'countBookedApartments']);
 Route::get('countBookingUsers',[AdminController::class,'countBookingUsers']);
 Route::get('countAllApartments',[AdminController::class,'countAllApartments']);
 Route::post('approveApartment',[AdminController::class,'approveApartment']);

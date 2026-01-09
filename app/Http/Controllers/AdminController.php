@@ -114,7 +114,7 @@ class AdminController extends Controller
 
     $pending = PendingApartment::findOrFail($request->pending_apartment_id);
 
-    // ❗ خذ البيانات بدون user_id
+    // خذ البيانات بدون user_id
     $data = collect($pending->getAttributes())->except([
     'id',
     'apartment_id',
@@ -125,12 +125,16 @@ class AdminController extends Controller
 
 $data['user_id'] = $pending->user_id; // هنا نضمن أنه ينتقل
 
-$apartment = Apartment::create($data);
 
     if ($pending->apartment_id) {
         // تحديث شقة موجودة
         $apartment = Apartment::findOrFail($pending->apartment_id);
         $apartment->update($data);
+        $oldapartment=Apartment::where('id',$pending->apartment_id)->first();
+        $oldapartment->delete();
+        $apartment = Apartment::create($data);
+        
+
     } else {
         // الإنشاء مع فرض user_id صراحة
         $apartment = new Apartment($data);

@@ -395,7 +395,8 @@ public function approveBookingUpdate(Request $request)
         
         return response()->json([
             'message' => 'تمت الموافقة على الحجز بنجاح',
-            'booking_status' => $booking->status
+            'booking_status' => $booking->status,
+            'renter_token'=>$booking->user->device_token,
             
         ], 200);
     }
