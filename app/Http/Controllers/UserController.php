@@ -50,15 +50,14 @@ class UserController extends Controller
     {
      
 
-
 $params=array(
-'token' => 'jwtoaxmxqtwq9zgr',
+'token' => 'c2pfilty64z6ru8s',
 'to' => $phone,
-'body' => 'your OTP code is: ' . $otp
+'body' => 'Your OTP code is: '.$otp
 );
 $curl = curl_init();
 curl_setopt_array($curl, array(
-  CURLOPT_URL => "https://api.ultramsg.com/instance155393/messages/chat",
+  CURLOPT_URL => "https://api.ultramsg.com/instance158363/messages/chat",
   CURLOPT_RETURNTRANSFER => true,
   CURLOPT_ENCODING => "",
   CURLOPT_MAXREDIRS => 10,

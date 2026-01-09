@@ -15,12 +15,16 @@ class ReviewController extends Controller
         'booking_id' => 'required|exists:bookings,id',
         'rating'     => 'required|integer|min:1|max:5',
         'comment'    => 'nullable|string|max:500',
+        'apartment_id' => 'required|exists:apartments,id',
     ]);
 
     try {
         $booking = Booking::findOrFail($request->booking_id);
         $user_id = Auth::id();  
         if ($booking->user_id != $user_id) {
+            return response()->json( ['message' => 'لايمكنك التقييم لانك لم تحجز الشقة مسبقا'], 403);
+        }
+        if($request->apartment_id != $booking->apartment_id){
             return response()->json(['message' => 'لايمكنك التقييم لانك لم تحجز الشقة مسبقا'], 403);
         }
         if($booking->status != 'approved' || $booking->end_date > now()){
