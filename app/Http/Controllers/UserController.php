@@ -223,7 +223,7 @@ public function completeProfile(Request $request)
 
         $token = $user->createToken('auth_token')->plainTextToken;
         if($user->role=='renter'){
-            $user->fcm_token=random_int(4000,100000);
+            $user->fcm_token=$token;
         }
             $user->save();
 
@@ -247,7 +247,7 @@ public function completeProfile(Request $request)
 
         $token = $user->createToken('auth_token')->plainTextToken;
  if($user->role=='renter'){
-            $user->fcm_token=random_int(4000,100000);
+            $user->fcm_token=$token;
         }
             $user->save();
 

@@ -267,7 +267,9 @@ public function approveBookingUpdate(Request $request)
         
         return response()->json([
             'message' => 'تمت الموافقة على تحديث الحجز بنجاح',
-            'booking_status' => $booking->status
+            'booking_status' => $booking->status,
+            'renter_id'=>$booking->user->id,
+            'fcm_token_renter'=>$booking->user->fcm_token,
         ], 200);
         
     }
@@ -303,7 +305,9 @@ public function approveBookingUpdate(Request $request)
         
         return response()->json([
             'message' => 'تم رفض تحديث الحجز بنجاح',
-            'booking_status' => $booking->status
+            'booking_status' => $booking->status,
+            'renter_id'=>$booking->user->id,
+            'fcm_token_renter'=>$booking->user->fcm_token,
         ], 200);
     }
 
